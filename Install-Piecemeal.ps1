@@ -8,7 +8,11 @@
 
         This enables extensibility within the module.
     .Notes
-        This returns a modified Get-Extension
+        This returns a modified Get-Extension    
+    .Example
+        Install-Piecemeal -ExtensionModule RoughDraft -ExtensionModuleAlias rd -ExtensionTypeName RoughDraft.Extension
+    .Link
+        Get-Extension
     #>
     param(
     # The name of the module that is being extended.

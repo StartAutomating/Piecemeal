@@ -14,6 +14,7 @@
     .Link
         Get-Extension
     #>
+    [OutputType([string])]
     param(
     # The name of the module that is being extended.
     [Parameter(Mandatory,ValueFromPipelineByPropertyName)]

@@ -4,8 +4,8 @@
     .Synopsis
         Installs Piecemeal
     .Description
-        Installs Piecemeal into a module.  
-        
+        Installs Piecemeal into a module.
+
         This enables extensibility within the module.
     .Notes
         This returns a modified Get-Extension
@@ -45,12 +45,12 @@
     [string]
     $OutputPath
     )
-    
+
     begin {
-        $myModule        = $MyInvocation.MyCommand.Module        
+        $myModule        = $MyInvocation.MyCommand.Module
         ${?<CurlyBrace>} = [Regex]::new('{(?<TrailingWhitespace>\s{0,})(?<Newline>[\r\n]{0,})?(?<Indent>\s{0,})?','Multiline')
         ${?<Indent>}     = [Regex]::new('^\s{0,}', 'Multiline,RightToLeft')
-    }    
+    }
 
     process {
         $myParams = [Ordered]@{} + $PSBoundParameters
@@ -58,30 +58,30 @@
         # Walk over each command this module exports.
         foreach ($exported in $myModule.ExportedCommands.Values) {
             # If the command is not a verb we're exporting, skip it.
-            if ($exported.Verb -notin $Verb) { continue } 
-            
+            if ($exported.Verb -notin $Verb) { continue }
+
 
             # Copy the original text
             $commandString = $exported.ScriptBlock.Ast.ToString()
             # get the tokens (which have comments)
-            $commandTokens = [Management.Automation.PSParser]::Tokenize($commandString, [ref]$null) 
+            $commandTokens = [Management.Automation.PSParser]::Tokenize($commandString, [ref]$null)
             # and get the parameters from the abstract syntax tree.
-            $paramsAst = $exported.ScriptBlock.Ast.FindAll({param($ast) $ast -is [Management.Automation.Language.ParameterAst]}, $true)             
-            
-            # Create a collection of default parameters and their values.  
+            $paramsAst = $exported.ScriptBlock.Ast.FindAll({param($ast) $ast -is [Management.Automation.Language.ParameterAst]}, $true)
+
+            # Create a collection of default parameters and their values.
             # We will declare these as variables within the copy of the function.
             $defaultParameters = [Ordered]@{}
-            
+
             $skipParameters = @( # Next, make a list of parameters we will skip
                 foreach ($statement in $paramsAst) {
                     # (any parameters declared by this function).
-                    if ($statement.Name.VariablePath.UserPath -and 
-                        $MyInvocation.MyCommand.Parameters[$statement.Name.VariablePath.UserPath] 
-                    ) {                        
+                    if ($statement.Name.VariablePath.UserPath -and
+                        $MyInvocation.MyCommand.Parameters[$statement.Name.VariablePath.UserPath]
+                    ) {
                         $statement
                    }
                 }
-            )                        
+            )
 
             # Now we start modifying the script
             $lengthChange = 0 # (keeping track of how much we change the length)
@@ -93,7 +93,7 @@
                     $defaultParameters["$($skipParam.Name)"] = "$($skipParam.DefaultValue)" # save it for later.
                 }
                 # Determine the figure out the length of the removal, according to the AST.
-                $removeLength = $toSkip.EndOffset - $toSkip.StartOffset                
+                $removeLength = $toSkip.EndOffset - $toSkip.StartOffset
                 # If the parameter we're removing was immediately followed by a comma
                 $immediatelyFollowedBy = $commandString[$toSkip.StartOffset + $removeLength - $lengthChange]
                 if ($immediatelyFollowedBy -eq ',') {
@@ -103,42 +103,42 @@
                 $beforeTokens = @($commandTokens | Where-Object Start -lt $toSkip.StartOffset)
                 for ($i = -1; $i -gt -$beforeTokens.Length; $i--) {
                     # we'll also want to remove any newlines or comments above the parameter
-                    if ($beforeTokens[$i].Type -notin 'Comment','Newline') { 
+                    if ($beforeTokens[$i].Type -notin 'Comment','Newline') {
                         break
                     }
                 }
-                
+
                 # Adjust the pointer accordingly
                 $realStart     = $beforeTokens[$i - 1].Start + $beforeTokens[$i - 1].Length + 1
                 $removeLength += $toSkip.StartOffset - $realStart
-                
+
                 # Remove the content
                 $changed = $commandString.Remove(
-                    $realStart - $lengthChange, 
+                    $realStart - $lengthChange,
                     $removeLength
                 )
-                
+
                 # Keep track of how much was removed
                 $lengthChange += $removeLength
-                
+
                 # And update the command
-                $commandString = $changed                
+                $commandString = $changed
             }
             #endregion Extract Skipped Parameters
-            
+
             $insertIntoBlock = # We will insert parameters into the the first block that will run.
-                foreach ($blockName in 'Begin', 'Process', 'End') {
+                foreach ($blockName in 'DynamicParam', 'Begin', 'Process', 'End') {
                     if ($exported.ScriptBlock.Ast.Body."${blockName}Block") {
                         $exported.ScriptBlock.Ast.Body."${blockName}Block"; break
                     }
                 }
-            
+
             # Our pointer starts at the beginning of the block (minus what we've removed, plus the name of the block's length)
             $insertPoint = $insertIntoBlock.Extent.StartOffset - $lengthChange + $insertIntoBlock.BlockKind.Length
             # We find the next curly brace
             $foundCurly  = ${?<CurlyBrace>}.Match($commandString, $insertPoint)
             $indentLevel = 0
-            if ($foundCurly.Success) { 
+            if ($foundCurly.Success) {
                 $insertPoint = $foundCurly.StartIndex  + $foundCurly.Length # then adjust our insertion point by this
                 $indentLevel = ${?<Indent>}.Match($commandString, $insertPoint).Length # determine the indent
                 $insertPoint -= $indentLevel # and then subtract it so we're inserting at the beginning of the line.
@@ -147,7 +147,7 @@
             # Walk over each parameter passed in.
             foreach ($myParam in $myParams.GetEnumerator()) {
                 $defaultParameters["`$$($myParam.Key)"] =  # and assign them a default value.
-                    if ($myParam.Value -as [float] -ne $null) {
+                    if ($null -ne ($myParam.Value -as [float])) {
                         "$($myParam.Value)"
                     } elseif ($myParam.Value -is [Array]) {
                         "'$(@(foreach ($v in $myParam.Value) { "$v".Replace("'","''") }) -join "','")'"
@@ -165,18 +165,18 @@
                 }) -join [Environment]::NewLine
             # Add one more newline so that the original text is still indented.
             $insertion += [Environment]::NewLine
-            
-            
+
+
 
             $newCommand = $commandString.Insert($insertPoint, $insertion) -replace # Finally, we insert the default values
                 "($($exported.Verb))-($($exported.Noun))", "`$1-$ExtensionModule`$2" -replace # change the name
                 " Extensions ", " $ExtensionModule Extensions " # and update likely documentation mentions
-            
+
             $null = $myOutput.AppendLine($newCommand)
         }
-        
 
-        $myOutput = 
+
+        $myOutput =
             if (-not $NoLogo) {
                 $installInstructions =
                     @(
@@ -199,7 +199,7 @@
                     $myModule.Version
                     ']'
                     ':'
-                    $myModule.Description                    
+                    $myModule.Description
                 ) -join ' '
                 $null = $myOutput.Insert(0, ("#region $logo" + [Environment]::NewLine + "# $installInstructions" + [Environment]::NewLine))
                 $null = $myOutput.AppendLine("#endregion $logo")

@@ -39,49 +39,59 @@
     $ExtensionNameRegEx = '(extension|ext|ex|x)\.ps1$',
 
     # The extension module.  If provided, this will have to prefix the ExtensionNameRegex
+    [Parameter(ValueFromPipelineByPropertyName)]
     [string]
     $ExtensionModule,
 
     # A list of extension module aliases.
+    [Parameter(ValueFromPipelineByPropertyName)]
     [string[]]
     $ExtensionModuleAlias,
 
     # The extension type name.
+    [Parameter(ValueFromPipelineByPropertyName)]
     [string]
     $ExtensionTypeName,
 
     # If set, will return the dynamic parameters object of all the extensions for a given command.
+    [Parameter(ValueFromPipelineByPropertyName)]
     [switch]
     $DynamicParameter,
 
     # If set, will return if the extension could run
+    [Parameter(ValueFromPipelineByPropertyName)]
     [Alias('CanRun')]
     [switch]
     $CouldRun,
 
     # If set, will run the extension.  If -Stream is passed, results will be directly returned.
     # By default, extension results are wrapped in a return object.
+    [Parameter(ValueFromPipelineByPropertyName)]
     [switch]
     $Run,
 
     # If set, will stream output from running the extension.
     # By default, extension results are wrapped in a return object.
+    [Parameter(ValueFromPipelineByPropertyName)]
     [switch]
     $Stream,
 
     # If set, will return the dynamic parameters of all extensions for a given command, using the provided DynamicParameterSetName.
     # Implies -DynamicParameter.
+    [Parameter(ValueFromPipelineByPropertyName)]
     [string]
     $DynamicParameterSetName,
 
 
     # If provided, will return the dynamic parameters of all extensions for a given command, with all positional parameters offset.
     # Implies -DynamicParameter.
+    [Parameter(ValueFromPipelineByPropertyName)]
     [int]
     $DynamicParameterPositionOffset = 0,
 
 
     # The parameters to the extension.  Only used when determining if the extension -CouldRun.
+    [Parameter(ValueFromPipelineByPropertyName)]
     [Collections.IDictionary]
     [Alias('Parameters','ExtensionParameter','ExtensionParameters')]
     $Parameter = @{}
@@ -101,7 +111,7 @@
             )
             process {
                 if ($Command) {
-                    foreach ($ext in $ExtensionCommand.ExtendsCommands) {
+                    foreach ($ext in $ExtensionCommand.ExtensionCommands) {
                         if ($ext.Name -in $command) {
                             $commandExtended = $ext
                             return $ExtensionCommand
@@ -188,7 +198,10 @@
                 $ParameterSetName,
 
                 [int]
-                $PositionOffset
+                $PositionOffset,
+
+                [switch]
+                $NoMandatory
                 )
 
                 $ExtensionDynamicParameters = [Management.Automation.RuntimeDefinedParameterDictionary]::new()
@@ -213,6 +226,10 @@
                                 }
                         }
 
+                        if ($NoMandatory -and $attr.Mandatory) {
+                            $attr.Mandatory = $false
+                        }
+
                         if ($PositionOffset -and $attr.Position -ge 0) {
                             $attr.Position += $PositionOffset
                         }
@@ -225,22 +242,23 @@
             $extCmd.PSObject.Methods.Add([PSScriptMethod]::new('CouldRun', {
                 param([Collections.IDictionary]$params)
 
-                $mappedParams = [Ordered]@{}
-                $mandatories = @(foreach ($myParam in $this.Parameters.GetEnumerator()) {
-                    if ($params.Contains($myParam.Key)) {
-                        $mappedParams[$myParam.Key] = $params[$myParam.Key]
-                    } else {
-                        foreach ($paramAlias in $myParam.Value.Aliases) {
-                            if ($params.Contains($paramAlias)) {
-                                $mappedParams[$myParam.Key] = $params[$paramAlias]
-                                break
+                $mappedParams = [Ordered]@{} # Create a collection of mapped parameters
+                $mandatories  =  # Walk thru each parameter of this command
+                    @(foreach ($myParam in $this.Parameters.GetEnumerator()) {
+                        if ($params.Contains($myParam.Key)) { # If this was in Params, 
+                            $mappedParams[$myParam.Key] = $params[$myParam.Key] # then 
+                        } else {
+                            foreach ($paramAlias in $myParam.Value.Aliases) {
+                                if ($params.Contains($paramAlias)) {
+                                    $mappedParams[$myParam.Key] = $params[$paramAlias]
+                                    break
+                                }
                             }
                         }
-                    }
-                    if ($myParam.value.Attributes.Mandatory) {
-                        $myParam.Key
-                    }
-                })
+                        if ($myParam.value.Attributes.Mandatory) {
+                            $myParam.Key
+                        }
+                    })
 
                 foreach ($mandatoryParam in $mandatories) {
                     if (-not $params.Contains($mandatoryParam)) {

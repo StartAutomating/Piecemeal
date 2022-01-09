@@ -89,6 +89,13 @@
     [int]
     $DynamicParameterPositionOffset = 0,
 
+    # If set, will return the dynamic parameters of all extensions for a given command, with all mandatory parameters marked as optional.
+    # Implies -DynamicParameter.  Does not actually prevent the parameter from being Mandatory on the Extension.
+    [Parameter(ValueFromPipelineByPropertyName)]
+    [Alias('NoMandatoryDynamicParameters')]
+    [switch]
+    $NoMandatoryDynamicParameter,
+
 
     # The parameters to the extension.  Only used when determining if the extension -CouldRun.
     [Parameter(ValueFromPipelineByPropertyName)]
@@ -206,17 +213,25 @@
 
                 $ExtensionDynamicParameters = [Management.Automation.RuntimeDefinedParameterDictionary]::new()
                 $Extension = $this
-                foreach ($in in ([Management.Automation.CommandMetaData]$Extension).Parameters.Keys) {
-                    $ExtensionDynamicParameters.Add($in, [Management.Automation.RuntimeDefinedParameter]::new(
-                        $Extension.Parameters[$in].Name,
-                        $Extension.Parameters[$in].ParameterType,
-                        $Extension.Parameters[$in].Attributes
-                    ))
-                }
-                foreach ($paramName in $ExtensionDynamicParameters.Keys) {
-                    foreach ($attr in $ExtensionDynamicParameters[$paramName].Attributes) {
-                        if ($attr.'ParameterSetName') {
-                            $attr.ParameterSetName =
+                foreach ($in in @(([Management.Automation.CommandMetaData]$Extension).Parameters.Keys)) {
+                    $attrList = [Collections.Generic.List[Attribute]]::new()
+                    foreach ($attr in $extension.Parameters[$in].attributes) {
+                        if ($attr -isnot [Management.Automation.ParameterAttribute]) {
+                            # we can passthru any non-parameter attributes
+                            $attrList.Add($attr)
+                        } else {
+                            # but parameter attributes need to copied.
+                            $attrCopy = [Management.Automation.ParameterAttribute]::new()
+                            # (Side note: without a .Clone, copying is tedious.)
+                            foreach ($prop in $attrCopy.GetType().GetProperties('Instance,Public')) {
+                                if (-not $prop.CanWrite) { continue }
+                                if ($null -ne $attr.($prop.Name)) {
+                                    $attrCopy.($prop.Name) = $attr.($prop.Name)
+                                }
+                            }
+
+
+                            $attrCopy.ParameterSetName =
                                 if ($ParameterSetName) {
                                     $ParameterSetName
                                 } elseif ($this -is [Management.Automation.FunctionInfo]) {
@@ -224,17 +239,25 @@
                                 } elseif ($this -is [Management.Automation.ExternalScriptInfo]) {
                                     $this.Source
                                 }
-                        }
 
-                        if ($NoMandatory -and $attr.Mandatory) {
-                            $attr.Mandatory = $false
-                        }
+                            if ($NoMandatory -and $attrCopy.Mandatory) {
+                                $attrCopy.Mandatory = $false
+                            }
 
-                        if ($PositionOffset -and $attr.Position -ge 0) {
-                            $attr.Position += $PositionOffset
+                            if ($PositionOffset -and $attr.Position -ge 0) {
+                                $attrCopy.Position += $PositionOffset
+                            }
+                            $attrList.Add($attrCopy)
                         }
                     }
+
+                    $ExtensionDynamicParameters.Add($in, [Management.Automation.RuntimeDefinedParameter]::new(
+                        $Extension.Parameters[$in].Name,
+                        $Extension.Parameters[$in].ParameterType,
+                        $attrList
+                    ))
                 }
+
                 $ExtensionDynamicParameters
 
             }))
@@ -245,24 +268,24 @@
                 $mappedParams = [Ordered]@{} # Create a collection of mapped parameters
                 $mandatories  =  # Walk thru each parameter of this command
                     @(foreach ($myParam in $this.Parameters.GetEnumerator()) {
-                        if ($params.Contains($myParam.Key)) { # If this was in Params, 
-                            $mappedParams[$myParam.Key] = $params[$myParam.Key] # then 
+                        if ($params.Contains($myParam.Key)) { # If this was in Params,
+                            $mappedParams[$myParam.Key] = $params[$myParam.Key] # then map it.
                         } else {
-                            foreach ($paramAlias in $myParam.Value.Aliases) {
-                                if ($params.Contains($paramAlias)) {
+                            foreach ($paramAlias in $myParam.Value.Aliases) { # Otherwise, check the aliases
+                                if ($params.Contains($paramAlias)) { # and map it if the parameters had the alias.
                                     $mappedParams[$myParam.Key] = $params[$paramAlias]
                                     break
                                 }
                             }
                         }
-                        if ($myParam.value.Attributes.Mandatory) {
-                            $myParam.Key
+                        if ($myParam.value.Attributes.Mandatory) { # If the parameter was mandatory,
+                            $myParam.Key # keep track of it.
                         }
                     })
 
-                foreach ($mandatoryParam in $mandatories) {
-                    if (-not $params.Contains($mandatoryParam)) {
-                        return $false
+                foreach ($mandatoryParam in $mandatories) { # Walk thru each mandatory parameter.
+                    if (-not $params.Contains($mandatoryParam)) { # If it wasn't in the parameters.
+                        return $false # return $false (note, for now, this prevents parameter sets from working in extensions)
                     }
                 }
                 return $mappedParams
@@ -285,8 +308,8 @@
             }
             process {
                 $extCmd = $_
-                if ($DynamicParameter -or $DynamicParameterSetName -or $DynamicParameterPositionOffset) {
-                    $extensionParams = $extCmd.GetDynamicParameters($DynamicParameterSetName, $DynamicParameterPositionOffset)
+                if ($DynamicParameter -or $DynamicParameterSetName -or $DynamicParameterPositionOffset -or $NoMandatoryDynamicParameter) {
+                    $extensionParams = $extCmd.GetDynamicParameters($DynamicParameterSetName, $DynamicParameterPositionOffset, $NoMandatoryDynamicParameter)
                     foreach ($kv in $extensionParams.GetEnumerator()) {
                         if ($commandExtended -and ([Management.Automation.CommandMetaData]$commandExtended).Parameters.$($kv.Key)) {
                             continue

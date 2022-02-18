@@ -96,7 +96,6 @@
     [switch]
     $NoMandatoryDynamicParameter,
 
-
     # The parameters to the extension.  Only used when determining if the extension -CouldRun.
     [Parameter(ValueFromPipelineByPropertyName)]
     [Collections.IDictionary]
@@ -171,6 +170,9 @@
             $extCmd.PSObject.Properties.Add([PSNoteProperty]::new('InheritanceLevel', $inheritanceLevel))
             $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
                 'DisplayName', [ScriptBlock]::Create("`$this.Name -replace '$extensionFullRegex'")
+            ))
+            $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
+                'Attributes', {$this.ScriptBlock.Attributes}
             ))
             $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
                 'Description',

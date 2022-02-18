@@ -43,6 +43,11 @@
     [string]
     $ExtensionTypeName,
 
+    # The noun used for any extension commands.
+    [Parameter(ValueFromPipelineByPropertyName)]
+    [string]
+    $ExtensionNoun,
+
     # The output path.
     # If provided, contents will be written to the output path with Set-Content
     # Otherwise, contents will be returned.
@@ -172,9 +177,23 @@
             $insertion += [Environment]::NewLine
 
 
+            $extensionCommandReplacement =
+                if ($ExtensionNoun) {
+                    "`$1-$ExtensionNoun"
+                } else {
+                    "`$1-$ExtensionModule`$2"
+                }
+
+            $extensionVariableReplacer =
+                if ($ExtensionNoun) {
+                    "`$script:${ExtensionNoun}s"
+                } else {
+                    "`$script:${ExtensionModule}Extensions"
+                }
 
             $newCommand = $commandString.Insert($insertPoint, $insertion) -replace # Finally, we insert the default values
-                "($($exported.Verb))-($($exported.Noun))", "`$1-$ExtensionModule`$2" -replace # change the name
+                "($($exported.Verb))-($($exported.Noun))", $extensionCommandReplacement -replace # change the name
+                '\$script:Extensions', $extensionVariableReplacer -replace # change the inner variable references,
                 " Extensions ", " $ExtensionModule Extensions " # and update likely documentation mentions
 
             $null = $myOutput.AppendLine($newCommand)

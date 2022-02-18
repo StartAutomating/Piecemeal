@@ -53,6 +53,12 @@
     [switch]
     $RequireExtensionAttribute,
 
+    # If set, will require a [Management.Automation.Cmdlet] attribute to be considered an extension.
+    # This attribute can associate the extension with one or more commands.
+    [Parameter(ValueFromPipelineByPropertyName)]
+    [switch]
+    $RequireCmdletAttribute,
+
     # The output path.
     # If provided, contents will be written to the output path with Set-Content
     # Otherwise, contents will be returned.

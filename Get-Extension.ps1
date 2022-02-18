@@ -36,7 +36,7 @@
     # By default, '(extension|ext|ex|x)\.ps1$'
     [ValidateNotNullOrEmpty()]
     [string]
-    $ExtensionNameRegEx = '(extension|ext|ex|x)\.ps1$',
+    $ExtensionNameRegEx = '(?<!-)(extension|ext|ex|x)\.ps1$',
 
     # The extension module.  If provided, this will have to prefix the ExtensionNameRegex
     [Parameter(ValueFromPipelineByPropertyName)]
@@ -96,10 +96,16 @@
     [switch]
     $NoMandatoryDynamicParameter,
 
-    # If set, will require a [Runtime.CompilerServices.Extension()] to be considered an extension.
+    # If set, will require a [Runtime.CompilerServices.Extension()] attribute to be considered an extension.
     [Parameter(ValueFromPipelineByPropertyName)]
     [switch]
     $RequireExtensionAttribute,
+
+    # If set, will require a [Management.Automation.Cmdlet] attribute to be considered an extension.
+    # This attribute can associate the extension with one or more commands.
+    [Parameter(ValueFromPipelineByPropertyName)]
+    [switch]
+    $RequireCmdletAttribute,
 
     # The parameters to the extension.  Only used when determining if the extension -CouldRun.
     [Parameter(ValueFromPipelineByPropertyName)]
@@ -168,7 +174,7 @@
             }
 
             if (-not $hasExtensionAttribute -and $RequireExtensionAttribute) { return }
-            if (-not $extends) { return }
+            if (-not $extends -and $RequireExtensionAttribute) { return }
 
             $extCmd.PSObject.Properties.Add([PSNoteProperty]::new('Extends', $extends.Name))
             $extCmd.PSObject.Properties.Add([PSNoteProperty]::new('ExtensionCommands', $extends))

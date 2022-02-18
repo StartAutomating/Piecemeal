@@ -155,12 +155,12 @@
                 }
 
             # Our pointer starts at the beginning of the block (minus what we've removed, plus the name of the block's length)
-            $insertPoint = $insertIntoBlock.Extent.StartOffset - $lengthChange + $insertIntoBlock.BlockKind.Length
+            $insertPoint = $insertIntoBlock.Extent.StartOffset - $lengthChange + "$($insertIntoBlock.BlockKind.Length)"
             # We find the next curly brace
             $foundCurly  = ${?<CurlyBrace>}.Match($commandString, $insertPoint)
             $indentLevel = 0
             if ($foundCurly.Success) {
-                $insertPoint = $foundCurly.StartIndex  + $foundCurly.Length # then adjust our insertion point by this
+                $insertPoint = $foundCurly.Index  + $foundCurly.Length # then adjust our insertion point by this
                 $indentLevel = ${?<Indent>}.Match($commandString, $insertPoint).Length # determine the indent
                 $insertPoint -= $indentLevel # and then subtract it so we're inserting at the beginning of the line.
             }

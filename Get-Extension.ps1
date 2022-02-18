@@ -233,15 +233,28 @@
                             }
 
 
-                            $attrCopy.ParameterSetName =
+                            $attrCopy.ParameterSetName =                                
                                 if ($ParameterSetName) {
                                     $ParameterSetName
-                                } elseif ($this -is [Management.Automation.FunctionInfo]) {
-                                    $this.Name
-                                } elseif ($this -is [Management.Automation.ExternalScriptInfo]) {
-                                    $this.Source
                                 }
-
+                                else {
+                                    $defaultParamSetName = 
+                                        foreach ($extAttr in $Extension.ScriptBlock.Attributes) {
+                                            if ($extAttr.DefaultParameterSetName) {
+                                                $extAttr.DefaultParameterSetName
+                                                break
+                                            }
+                                        }
+                                    if ($defaultParamSetName) {
+                                        $defaultParamSetName
+                                    }
+                                    elseif ($this -is [Management.Automation.FunctionInfo]) {
+                                        $this.Name
+                                    } elseif ($this -is [Management.Automation.ExternalScriptInfo]) {
+                                        $this.Source
+                                    }
+                                }
+                                                                
                             if ($NoMandatory -and $attrCopy.Mandatory) {
                                 $attrCopy.Mandatory = $false
                             }

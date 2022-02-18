@@ -96,6 +96,11 @@
     [switch]
     $NoMandatoryDynamicParameter,
 
+    # If set, will require a [Runtime.CompilerServices.Extension()] to be considered an extension.
+    [Parameter(ValueFromPipelineByPropertyName)]
+    [switch]
+    $RequireExtensionAttribute,
+
     # The parameters to the extension.  Only used when determining if the extension -CouldRun.
     [Parameter(ValueFromPipelineByPropertyName)]
     [Collections.IDictionary]
@@ -143,12 +148,12 @@
                     $ExecutionContext.SessionState.InvokeCommand.GetCommand($in, 'Function,ExternalScript')
                 }
 
-            $isExtension = $false
+            $hasExtensionAttribute = $false
             $extends     = @()
             $inheritanceLevel = [ComponentModel.InheritanceLevel]::Inherited
             foreach ($attr in $extCmd.ScriptBlock.Attributes) {
                 if ($attr -is [Runtime.CompilerServices.ExtensionAttribute]) {
-                    $isExtension = $true
+                    $hasExtensionAttribute = $true
                 }
                 if ($attr -is [Management.Automation.CmdletAttribute]) {
                     $extensionCommandName = (
@@ -162,7 +167,7 @@
                 }
             }
 
-            if (-not $isExtension) { return }
+            if (-not $hasExtensionAttribute -and $RequireExtensionAttribute) { return }
             if (-not $extends) { return }
 
             $extCmd.PSObject.Properties.Add([PSNoteProperty]::new('Extends', $extends.Name))

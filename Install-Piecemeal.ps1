@@ -48,6 +48,11 @@
     [string]
     $ExtensionNoun,
 
+    # If set, will require a [Runtime.CompilerServices.Extension()] to be considered an extension.
+    [Parameter(ValueFromPipelineByPropertyName)]
+    [switch]
+    $RequireExtensionAttribute,
+
     # The output path.
     # If provided, contents will be written to the output path with Set-Content
     # Otherwise, contents will be returned.
@@ -184,7 +189,7 @@
                     "`$1-$ExtensionModule`$2"
                 }
 
-            $extensionVariableReplacer =
+            $extensionVariableReplacer = 
                 if ($ExtensionNoun) {
                     "`$script:${ExtensionNoun}s"
                 } else {

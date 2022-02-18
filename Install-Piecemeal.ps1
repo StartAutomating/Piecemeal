@@ -43,6 +43,22 @@
     [string]
     $ExtensionTypeName,
 
+    # The noun used for any extension commands.
+    [Parameter(ValueFromPipelineByPropertyName)]
+    [string]
+    $ExtensionNoun,
+
+    # If set, will require a [Runtime.CompilerServices.Extension()] to be considered an extension.
+    [Parameter(ValueFromPipelineByPropertyName)]
+    [switch]
+    $RequireExtensionAttribute,
+
+    # If set, will require a [Management.Automation.Cmdlet] attribute to be considered an extension.
+    # This attribute can associate the extension with one or more commands.
+    [Parameter(ValueFromPipelineByPropertyName)]
+    [switch]
+    $RequireCmdletAttribute,
+
     # The output path.
     # If provided, contents will be written to the output path with Set-Content
     # Otherwise, contents will be returned.
@@ -139,12 +155,12 @@
                 }
 
             # Our pointer starts at the beginning of the block (minus what we've removed, plus the name of the block's length)
-            $insertPoint = $insertIntoBlock.Extent.StartOffset - $lengthChange + $insertIntoBlock.BlockKind.Length
+            $insertPoint = $insertIntoBlock.Extent.StartOffset - $lengthChange + "$($insertIntoBlock.BlockKind.Length)"
             # We find the next curly brace
             $foundCurly  = ${?<CurlyBrace>}.Match($commandString, $insertPoint)
             $indentLevel = 0
             if ($foundCurly.Success) {
-                $insertPoint = $foundCurly.StartIndex  + $foundCurly.Length # then adjust our insertion point by this
+                $insertPoint = $foundCurly.Index  + $foundCurly.Length # then adjust our insertion point by this
                 $indentLevel = ${?<Indent>}.Match($commandString, $insertPoint).Length # determine the indent
                 $insertPoint -= $indentLevel # and then subtract it so we're inserting at the beginning of the line.
             }
@@ -172,9 +188,23 @@
             $insertion += [Environment]::NewLine
 
 
+            $extensionCommandReplacement =
+                if ($ExtensionNoun) {
+                    "`$1-$ExtensionNoun"
+                } else {
+                    "`$1-$ExtensionModule`$2"
+                }
+
+            $extensionVariableReplacer = 
+                if ($ExtensionNoun) {
+                    "`$script:${ExtensionNoun}s"
+                } else {
+                    "`$script:${ExtensionModule}Extensions"
+                }
 
             $newCommand = $commandString.Insert($insertPoint, $insertion) -replace # Finally, we insert the default values
-                "($($exported.Verb))-($($exported.Noun))", "`$1-$ExtensionModule`$2" -replace # change the name
+                "($($exported.Verb))-($($exported.Noun))", $extensionCommandReplacement -replace # change the name
+                '\$script:Extensions', $extensionVariableReplacer -replace # change the inner variable references,
                 " Extensions ", " $ExtensionModule Extensions " # and update likely documentation mentions
 
             $null = $myOutput.AppendLine($newCommand)

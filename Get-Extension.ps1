@@ -36,7 +36,7 @@
     # By default, '(extension|ext|ex|x)\.ps1$'
     [ValidateNotNullOrEmpty()]
     [string]
-    $ExtensionNameRegEx = '(extension|ext|ex|x)\.ps1$',
+    $ExtensionNameRegEx = '(?<!-)(extension|ext|ex|x)\.ps1$',
 
     # The extension module.  If provided, this will have to prefix the ExtensionNameRegex
     [Parameter(ValueFromPipelineByPropertyName)]
@@ -96,6 +96,16 @@
     [switch]
     $NoMandatoryDynamicParameter,
 
+    # If set, will require a [Runtime.CompilerServices.Extension()] attribute to be considered an extension.
+    [Parameter(ValueFromPipelineByPropertyName)]
+    [switch]
+    $RequireExtensionAttribute,
+
+    # If set, will require a [Management.Automation.Cmdlet] attribute to be considered an extension.
+    # This attribute can associate the extension with one or more commands.
+    [Parameter(ValueFromPipelineByPropertyName)]
+    [switch]
+    $RequireCmdletAttribute,
 
     # The parameters to the extension.  Only used when determining if the extension -CouldRun.
     [Parameter(ValueFromPipelineByPropertyName)]
@@ -144,12 +154,12 @@
                     $ExecutionContext.SessionState.InvokeCommand.GetCommand($in, 'Function,ExternalScript')
                 }
 
-            $isExtension = $false
+            $hasExtensionAttribute = $false
             $extends     = @()
             $inheritanceLevel = [ComponentModel.InheritanceLevel]::Inherited
             foreach ($attr in $extCmd.ScriptBlock.Attributes) {
                 if ($attr -is [Runtime.CompilerServices.ExtensionAttribute]) {
-                    $isExtension = $true
+                    $hasExtensionAttribute = $true
                 }
                 if ($attr -is [Management.Automation.CmdletAttribute]) {
                     $extensionCommandName = (
@@ -163,14 +173,17 @@
                 }
             }
 
-            if (-not $isExtension) { return }
-            if (-not $extends) { return }
+            if (-not $hasExtensionAttribute -and $RequireExtensionAttribute) { return }
+            if (-not $extends -and $RequireExtensionAttribute) { return }
 
             $extCmd.PSObject.Properties.Add([PSNoteProperty]::new('Extends', $extends.Name))
             $extCmd.PSObject.Properties.Add([PSNoteProperty]::new('ExtensionCommands', $extends))
             $extCmd.PSObject.Properties.Add([PSNoteProperty]::new('InheritanceLevel', $inheritanceLevel))
             $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
                 'DisplayName', [ScriptBlock]::Create("`$this.Name -replace '$extensionFullRegex'")
+            ))
+            $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
+                'Attributes', {$this.ScriptBlock.Attributes}
             ))
             $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
                 'Description',
@@ -231,15 +244,28 @@
                             }
 
 
-                            $attrCopy.ParameterSetName =
+                            $attrCopy.ParameterSetName =                                
                                 if ($ParameterSetName) {
                                     $ParameterSetName
-                                } elseif ($this -is [Management.Automation.FunctionInfo]) {
-                                    $this.Name
-                                } elseif ($this -is [Management.Automation.ExternalScriptInfo]) {
-                                    $this.Source
                                 }
-
+                                else {
+                                    $defaultParamSetName = 
+                                        foreach ($extAttr in $Extension.ScriptBlock.Attributes) {
+                                            if ($extAttr.DefaultParameterSetName) {
+                                                $extAttr.DefaultParameterSetName
+                                                break
+                                            }
+                                        }
+                                    if ($defaultParamSetName) {
+                                        $defaultParamSetName
+                                    }
+                                    elseif ($this -is [Management.Automation.FunctionInfo]) {
+                                        $this.Name
+                                    } elseif ($this -is [Management.Automation.ExternalScriptInfo]) {
+                                        $this.Source
+                                    }
+                                }
+                                                                
                             if ($NoMandatory -and $attrCopy.Mandatory) {
                                 $attrCopy.Mandatory = $false
                             }

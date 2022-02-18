@@ -79,7 +79,7 @@ describe Piecemeal {
     }
        
     afterAll {
-        # Get-ChildItem -Path $pwd -Filter *.ext.ps1 | Remove-Item
+        Get-ChildItem -Path $pwd -Filter *.ext.ps1 | Remove-Item
     }
 }
 Pop-Location

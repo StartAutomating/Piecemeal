@@ -1,4 +1,9 @@
-﻿## 0.1.3
+﻿## 0.1.4
+---
+* Get-Extension:
+  * Can now filter extension parameters based off of command (#17)
+
+## 0.1.3
 ---
 * Get-Extension:
   * Added -RequireExtensionAttribute (#13)

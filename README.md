@@ -19,11 +19,11 @@ Install-Piecemeal -ExtensionModuleName MyModule -Verb Get -OutputPath .\Get-MyMo
 This will create the source for the command Get-MyModuleExtension.
 Get-MyModuleExtension is a modified copy of Get-Extension that returns only extensions related to MyModule.
 
-** NOTE: Your Module does not have to Require or Nest Piecemeal **
+**NOTE: Your Module does not have to Require or Nest Piecemeal**
 
 #### Extending a Function
 
-Once Piecemeal has been installed into a module, you can allow any command to be extended with two easy steps:
+Once Piecemeal has been installed into a module, you can allow any command to be extended with two easy optional steps:
 
 1. Add dynamic parameters from extensions
 
@@ -34,7 +34,7 @@ Once Piecemeal has been installed into a module, you can allow any command to be
     }
 ```
 
-2. (optionally) Run the extension
+2. Run the extension
 
 
 By default, running your extension command will produce an object containing:
@@ -63,7 +63,6 @@ Alternatively, you can determine what -CouldRun:
     Get-MyModuleExtension -CouldRun -CommandName $MyInvocation.Mycommand -Parameter (@{} + $psBoundParameters)
 ```
 
-
 Once you have completed these steps, your command can be extended.  
 Extensions can exist within your module or any module that adds your module to it's tags.
 
@@ -78,9 +77,10 @@ They can be automatically discovered in any module that adds the tag "Piecemeal"
 Extensions should include the following attributes above their parameter block:
 
 ~~~PowerShell
-# It's an extension (this is required)
+# It's an extension (this is optional, unless you use -RequireExtensionAttribute)
 [Runtime.CompilerServices.Extension()]
 # Next one or more Cmdlet attribute define the command that is being extended.
+# (this is also optional, unless you use -RequireCmdletAttribute )
 [Management.Automation.Cmdlet("Set","Something")]
 # Finally, an extension can indicate how it should be Inherited with the ComponentModel.Inheritance attribute.
 # An extension that is 'Inherited' should return control to the main function when it is done.  This is the default

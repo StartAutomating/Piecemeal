@@ -1,7 +1,7 @@
 ﻿Push-Location $PSScriptRoot
 describe Piecemeal {    
     beforeAll {
-        $extScript = {
+        {
             <#
             .Synopsis
                 Basic Extension
@@ -11,7 +11,7 @@ describe Piecemeal {
         } | Set-Content .\01.ext.ps1
 
 
-        $extWithParams = {
+        {
             <#
             .Synopsis
                 Simple Extension
@@ -24,7 +24,7 @@ describe Piecemeal {
             $int
         } | Set-Content .\02.ext.ps1
 
-        $extForCmdlet = {
+        {
             <#
             .Synopsis
                 Cmdlet Extension
@@ -38,6 +38,21 @@ describe Piecemeal {
             )
             $int
         } | Set-Content .\03.ext.ps1
+
+        {
+            <#
+            .Synopsis
+                Cmdlet Extension
+            .Description
+                This extension extends a particular cmdlet
+            #>            
+            param(
+            [Parameter(Mandatory)]
+            [Management.Automation.Cmdlet("Get","Extension")]
+            [int]$Int
+            )
+            $int
+        } | Set-Content .\04.ext.ps1
     }
     context 'Get-Extension' {
         it '-ExtensionPath' {        
@@ -66,6 +81,15 @@ describe Piecemeal {
                 Where-Object Position -GE 0 |
                 Select-Object -ExpandProperty Mandatory |
                 Should -Be $false 
+        }
+
+        it 'Can exclude parameters if they are not for the right command' {
+            $x  = Get-Extension -ExtensionPath $pwd | Where-Object Name -like 04*
+            $x | Get-Extension -DynamicParameter -CommandName Get-Extension | 
+                Select-Object -ExpandProperty Keys | 
+                Select-Object -First 1 |
+                Should -Be "int"
+            $x | Get-Extension -DynamicParameter -CommandName New-Extension | Select-Object -ExpandProperty Count | Should -Be 0            
         }
     }
 

@@ -221,17 +221,27 @@
                 $PositionOffset,
 
                 [switch]
-                $NoMandatory
+                $NoMandatory,
+
+                [string[]]
+                $commandList
                 )
 
                 $ExtensionDynamicParameters = [Management.Automation.RuntimeDefinedParameterDictionary]::new()
                 $Extension = $this
-                foreach ($in in @(([Management.Automation.CommandMetaData]$Extension).Parameters.Keys)) {
+                
+                :nextDynamicParameter foreach ($in in @(([Management.Automation.CommandMetaData]$Extension).Parameters.Keys)) {
                     $attrList = [Collections.Generic.List[Attribute]]::new()
+                    $validCommandNames = @()
                     foreach ($attr in $extension.Parameters[$in].attributes) {
                         if ($attr -isnot [Management.Automation.ParameterAttribute]) {
                             # we can passthru any non-parameter attributes
                             $attrList.Add($attr)
+                            if ($attr -is [Management.Automation.CmdletAttribute] -and $commandList) {
+                                $validCommandNames += (
+                                    ($attr.VerbName -replace '\s') + '-' + ($attr.NounName -replace '\s')
+                                ) -replace '^\-' -replace '\-$'
+                            }
                         } else {
                             # but parameter attributes need to copied.
                             $attrCopy = [Management.Automation.ParameterAttribute]::new()
@@ -242,7 +252,6 @@
                                     $attrCopy.($prop.Name) = $attr.($prop.Name)
                                 }
                             }
-
 
                             $attrCopy.ParameterSetName =                                
                                 if ($ParameterSetName) {
@@ -277,6 +286,15 @@
                         }
                     }
 
+
+                    if ($commandList -and $validCommandNames) {
+                        :CheckCommandValidity do { 
+                            foreach ($vc in $validCommandNames) {
+                                if ($commandList -contains $vc) { break CheckCommandValidity }
+                            }
+                            continue nextDynamicParameter
+                        } while ($false)
+                    }
                     $ExtensionDynamicParameters.Add($in, [Management.Automation.RuntimeDefinedParameter]::new(
                         $Extension.Parameters[$in].Name,
                         $Extension.Parameters[$in].ParameterType,
@@ -335,7 +353,7 @@
             process {
                 $extCmd = $_
                 if ($DynamicParameter -or $DynamicParameterSetName -or $DynamicParameterPositionOffset -or $NoMandatoryDynamicParameter) {
-                    $extensionParams = $extCmd.GetDynamicParameters($DynamicParameterSetName, $DynamicParameterPositionOffset, $NoMandatoryDynamicParameter)
+                    $extensionParams = $extCmd.GetDynamicParameters($DynamicParameterSetName, $DynamicParameterPositionOffset, $NoMandatoryDynamicParameter, $CommandName)
                     foreach ($kv in $extensionParams.GetEnumerator()) {
                         if ($commandExtended -and ([Management.Automation.CommandMetaData]$commandExtended).Parameters.$($kv.Key)) {
                             continue

@@ -18,6 +18,7 @@ describe Piecemeal {
             .Description
                 This just has one parameter, $int, and it outputs $int
             #>
+            [Reflection.AssemblyMetaData("Rank",2)]
             param(
             [int]$Int
             )
@@ -57,9 +58,11 @@ describe Piecemeal {
     context 'Get-Extension' {
         it '-ExtensionPath' {        
             $extensionList = Get-Extension -ExtensionPath $pwd
+            # Results without a rank will come alphabetically
             $extensionList[0] | Select-Object -ExpandProperty Synopsis | Should -BeLike "Basic Extension*"
-            $extensionList[1] | Select-Object -ExpandProperty Synopsis | Should -BeLike "Simple Extension*"
-            $extensionList[2] | Select-Object -ExpandProperty Synopsis | Should -BeLike "Cmdlet Extension*"
+            $extensionList[1] | Select-Object -ExpandProperty Synopsis | Should -BeLike "Cmdlet Extension*" 
+            # SimpleExtension has a rank, to test this aspect of Piecemeal.
+            $extensionList[2] | Select-Object -ExpandProperty Synopsis | Should -BeLike "Simple Extension*"
         }
 
         it '-CommandName' {
@@ -89,7 +92,7 @@ describe Piecemeal {
                 Select-Object -ExpandProperty Keys | 
                 Select-Object -First 1 |
                 Should -Be "int"
-            $x | Get-Extension -DynamicParameter -CommandName New-Extension | Select-Object -ExpandProperty Count | Should -Be 0            
+            $x | Get-Extension -DynamicParameter -CommandName New-Extension | Select-Object -ExpandProperty Count | Should -Be 0
         }
     }
 

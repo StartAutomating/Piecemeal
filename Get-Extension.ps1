@@ -186,6 +186,17 @@
                 'Attributes', {$this.ScriptBlock.Attributes}
             ))
             $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
+                'Rank', {
+                    foreach ($attr in $this.ScriptBlock.Attributes) {
+                        if ($attr -is [Reflection.AssemblyMetaDataAttribute] -and 
+                            $attr.Key -in 'Order', 'Rank') {
+                            return $attr.Value -as [int]
+                        }
+                    }
+                    return 0
+                }
+            ))
+            $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
                 'Description',
                 {
                     # From ?<PowerShell_HelpField> in Irregular (https://github.com/StartAutomating/Irregular)
@@ -375,7 +386,7 @@
                     }
                 }
                 elseif ($CouldRun) {
-
+                    if (-not $extCmd) { return }
                     $couldRunExt = $extCmd.CouldRun($Parameter)
                     if (-not $couldRunExt) { return }
                     [PSCustomObject][Ordered]@{
@@ -387,6 +398,7 @@
                     return
                 }
                 elseif ($Run) {
+                    if (-not $extCmd) { return }
                     $couldRunExt = $extCmd.CouldRun($Parameter)
                     if (-not $couldRunExt) { return }
                     if ($extCmd.InheritanceLevel -eq 'InheritedReadOnly') { return }
@@ -486,10 +498,12 @@
                 Where-Object Name -Match $extensionFullRegex |
                 ConvertToExtension |
                 . WhereExtends $CommandName |
+                Sort-Object Rank, Name |
                 OutputExtension
         } else {
             $script:Extensions |
                 . WhereExtends $CommandName |
+                Sort-Object Rank, Name |
                 OutputExtension
         }
     }

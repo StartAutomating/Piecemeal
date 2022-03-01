@@ -35,9 +35,10 @@
     # If provided, will override the default extension name regular expression
     # (by default '(extension|ext|ex|x)\.ps1$' )
     [Parameter(ValueFromPipelineByPropertyName)]
+    [Alias('ExtensionNameRegEx')]
     [string]
-    $ExtensionNameRegEx,
-
+    $ExtensionPattern = '(?<!-)(extension|ext|ex|x)\.ps1$',
+    
     # The type name to add to an extension.  This can be used to format the extension.
     [Parameter(ValueFromPipelineByPropertyName)]
     [string]

@@ -34,9 +34,27 @@
 
     # The regular expression used to determine if a script is an extension.
     # By default, '(extension|ext|ex|x)\.ps1$'
+    [Parameter(ValueFromPipelineByPropertyName)]
     [ValidateNotNullOrEmpty()]
+    [Alias('ExtensionNameRegEx')]
     [string]
-    $ExtensionNameRegEx = '(?<!-)(extension|ext|ex|x)\.ps1$',
+    $ExtensionPattern = '(?<!-)(extension|ext|ex|x)\.ps1$',
+
+    # The name of an extension
+    [Parameter(ValueFromPipelineByPropertyName)]
+    [ValidateNotNullOrEmpty()]    
+    [string[]]
+    $ExtensionName,
+
+    # If provided, will treat -ExtensionName as a wildcard.
+    [Parameter(ValueFromPipelineByPropertyName)]    
+    [switch]
+    $Like,
+
+    # If provided, will treat -ExtensionName as a regular expression.
+    [Parameter(ValueFromPipelineByPropertyName)]
+    [switch]
+    $Match,
 
     # The extension module.  If provided, this will have to prefix the ExtensionNameRegex
     [Parameter(ValueFromPipelineByPropertyName)]
@@ -105,7 +123,7 @@
     # This attribute can associate the extension with one or more commands.
     [Parameter(ValueFromPipelineByPropertyName)]
     [switch]
-    $RequireCmdletAttribute,
+    $RequireCmdletAttribute,    
 
     # The parameters to the extension.  Only used when determining if the extension -CouldRun.
     [Parameter(ValueFromPipelineByPropertyName)]
@@ -127,6 +145,20 @@
             $ExtensionCommand
             )
             process {
+                if ($ExtensionName) {
+                    :CheckExtensionName do {
+                        foreach ($exn in $ExtensionName) {
+                            if ($like) { 
+                                if ($extensionCommand -like $exn) { break CheckExtensionName }
+                            }
+                            elseif ($match) {
+                                if ($ExtensionCommand -match $exn) { break CheckExtensionName }
+                            }
+                            elseif ($ExtensionCommand -eq $exn) { break CheckExtensionName }
+                        }
+                        return
+                    } while ($false)                    
+                }
                 if ($Command) {
                     foreach ($ext in $ExtensionCommand.ExtensionCommands) {
                         if ($ext.Name -in $command) {
@@ -429,9 +461,9 @@
 
         $extensionFullRegex =
             if ($ExtensionModule) {
-                "\.(?>$(@(@($ExtensionModule) + $ExtensionModuleAlias) -join '|'))\." + $ExtensionNameRegEx
+                "\.(?>$(@(@($ExtensionModule) + $ExtensionModuleAlias) -join '|'))\." + $ExtensionPattern
             } else {
-                $ExtensionNameRegEx
+                $ExtensionPattern
             }
 
         #region Find Extensions
@@ -502,7 +534,7 @@
                 OutputExtension
         } else {
             $script:Extensions |
-                . WhereExtends $CommandName |
+                . WhereExtends $CommandName |                
                 Sort-Object Rank, Name |
                 OutputExtension
         }

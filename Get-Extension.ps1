@@ -123,7 +123,12 @@
     # This attribute can associate the extension with one or more commands.
     [Parameter(ValueFromPipelineByPropertyName)]
     [switch]
-    $RequireCmdletAttribute,    
+    $RequireCmdletAttribute,
+
+    # If set, will validate this input against [ValidateScript], [ValidatePattern], and [ValidateSet] attributes found on an extension.
+    [Parameter(ValueFromPipelineByPropertyName)]
+    [PSObject]
+    $ValidateInput,
 
     # The parameters to the extension.  Only used when determining if the extension -CouldRun.
     [Parameter(ValueFromPipelineByPropertyName)]
@@ -253,6 +258,33 @@
                     ', 'IgnoreCase,IgnorePatternWhitespace', [Timespan]::FromSeconds(1)).Match(
                         $this.ScriptBlock
                 ).Groups["Content"].Value
+            }))
+
+            $extCmd.PSObject.Methods.Add([psscriptmethod]::new('Validate', {
+                param([PSObject]$ValidateInput)
+
+                
+                foreach ($attr in $this.ScriptBlock.Attributes) {
+                    if ($attr -is [Management.Automation.ValidateSetAttribute]) {
+                        if ($ValidateInput -notin $attr.ValidValues) {
+                            Write-Error "'$ValidateInput' is not a valid value.  Valid values are '$(@($attr.ValueValues) -join "','")'"
+                            return
+                        }
+                    }
+                    if ($attr -is [Management.Automation.ValidatePatternAttribute]) {
+                        $matched = [Regex]::new($attr.RegexPattern, $attr.Options, [Timespan]::FromSeconds(1)).Match($ValidateInput)
+                        if (-not $matched.Success) {
+                            "'$ValidateInput' is not a valid value.  Valid values must match the pattern '$($attr.RegexPattern)'"
+                            return
+                        }
+                    }
+                    if ($attr -is [Management.Automation.ValidateScriptAttribute]) {
+                        $_ = $ValidateInput 
+                        $validateResult = $attr.ScriptBlock.Invoke($ValidateInput)
+                        if (-not $validateResult) { return }
+                    }
+                }
+                return $true
             }))
 
             $extCmd.PSObject.Methods.Add([PSScriptMethod]::new('GetDynamicParameters', {
@@ -395,6 +427,18 @@
             }
             process {
                 $extCmd = $_
+                if ($ValidateInput) {
+                    try {
+                        if (-not $extCmd.Validate($ValidateInput)) {
+                            return
+                        }
+                    } catch {
+                        Write-Error $_
+                        return
+                    }
+                }
+                
+
                 if ($DynamicParameter -or $DynamicParameterSetName -or $DynamicParameterPositionOffset -or $NoMandatoryDynamicParameter) {
                     $extensionParams = $extCmd.GetDynamicParameters($DynamicParameterSetName, $DynamicParameterPositionOffset, $NoMandatoryDynamicParameter, $CommandName)
                     foreach ($kv in $extensionParams.GetEnumerator()) {

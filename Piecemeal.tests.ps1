@@ -18,6 +18,7 @@ describe Piecemeal {
             .Description
                 This just has one parameter, $int, and it outputs $int
             #>
+            [Reflection.AssemblyMetaData("Rank",2)]
             param(
             [int]$Int
             )
@@ -53,13 +54,22 @@ describe Piecemeal {
             )
             $int
         } | Set-Content .\04.ext.ps1
+
+        {
+            [ValidateScript({if ($_ -like 'a*') { return $true } else { return $false }})]
+            [ValidateSet('a','aa')]
+            [ValidatePattern('a{0,1}')]
+            param()
+        } | Set-Content .\05.ext.ps1
     }
     context 'Get-Extension' {
         it '-ExtensionPath' {        
             $extensionList = Get-Extension -ExtensionPath $pwd
+            # Results without a rank will come alphabetically
             $extensionList[0] | Select-Object -ExpandProperty Synopsis | Should -BeLike "Basic Extension*"
-            $extensionList[1] | Select-Object -ExpandProperty Synopsis | Should -BeLike "Simple Extension*"
-            $extensionList[2] | Select-Object -ExpandProperty Synopsis | Should -BeLike "Cmdlet Extension*"
+            $extensionList[1] | Select-Object -ExpandProperty Synopsis | Should -BeLike "Cmdlet Extension*" 
+            # SimpleExtension has a rank, to test this aspect of Piecemeal.
+            $extensionList[-1] | Select-Object -ExpandProperty Synopsis | Should -BeLike "Simple Extension*"
         }
 
         it '-CommandName' {
@@ -89,7 +99,14 @@ describe Piecemeal {
                 Select-Object -ExpandProperty Keys | 
                 Select-Object -First 1 |
                 Should -Be "int"
-            $x | Get-Extension -DynamicParameter -CommandName New-Extension | Select-Object -ExpandProperty Count | Should -Be 0            
+            $x | Get-Extension -DynamicParameter -CommandName New-Extension | Select-Object -ExpandProperty Count | Should -Be 0
+        }
+
+        it 'Can -ValidateInput' {
+             Get-Extension -ExtensionPath $pwd -ExtensionName 05* -Like -ValidateInput c | Should -Be $null
+             Get-Extension -ExtensionPath $pwd -ExtensionName 05* -Like -ValidateInput a | 
+                Select-Object -ExpandProperty Name | 
+                Should -BeLike 05*
         }
     }
 

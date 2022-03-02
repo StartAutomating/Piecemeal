@@ -34,9 +34,27 @@
 
     # The regular expression used to determine if a script is an extension.
     # By default, '(extension|ext|ex|x)\.ps1$'
+    [Parameter(ValueFromPipelineByPropertyName)]
     [ValidateNotNullOrEmpty()]
+    [Alias('ExtensionNameRegEx')]
     [string]
-    $ExtensionNameRegEx = '(?<!-)(extension|ext|ex|x)\.ps1$',
+    $ExtensionPattern = '(?<!-)(extension|ext|ex|x)\.ps1$',
+
+    # The name of an extension
+    [Parameter(ValueFromPipelineByPropertyName)]
+    [ValidateNotNullOrEmpty()]    
+    [string[]]
+    $ExtensionName,
+
+    # If provided, will treat -ExtensionName as a wildcard.
+    [Parameter(ValueFromPipelineByPropertyName)]    
+    [switch]
+    $Like,
+
+    # If provided, will treat -ExtensionName as a regular expression.
+    [Parameter(ValueFromPipelineByPropertyName)]
+    [switch]
+    $Match,
 
     # The extension module.  If provided, this will have to prefix the ExtensionNameRegex
     [Parameter(ValueFromPipelineByPropertyName)]
@@ -107,6 +125,11 @@
     [switch]
     $RequireCmdletAttribute,
 
+    # If set, will validate this input against [ValidateScript], [ValidatePattern], and [ValidateSet] attributes found on an extension.
+    [Parameter(ValueFromPipelineByPropertyName)]
+    [PSObject]
+    $ValidateInput,
+
     # The parameters to the extension.  Only used when determining if the extension -CouldRun.
     [Parameter(ValueFromPipelineByPropertyName)]
     [Collections.IDictionary]
@@ -127,6 +150,20 @@
             $ExtensionCommand
             )
             process {
+                if ($ExtensionName) {
+                    :CheckExtensionName do {
+                        foreach ($exn in $ExtensionName) {
+                            if ($like) { 
+                                if ($extensionCommand -like $exn) { break CheckExtensionName }
+                            }
+                            elseif ($match) {
+                                if ($ExtensionCommand -match $exn) { break CheckExtensionName }
+                            }
+                            elseif ($ExtensionCommand -eq $exn) { break CheckExtensionName }
+                        }
+                        return
+                    } while ($false)                    
+                }
                 if ($Command) {
                     foreach ($ext in $ExtensionCommand.ExtensionCommands) {
                         if ($ext.Name -in $command) {
@@ -186,6 +223,17 @@
                 'Attributes', {$this.ScriptBlock.Attributes}
             ))
             $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
+                'Rank', {
+                    foreach ($attr in $this.ScriptBlock.Attributes) {
+                        if ($attr -is [Reflection.AssemblyMetaDataAttribute] -and 
+                            $attr.Key -in 'Order', 'Rank') {
+                            return $attr.Value -as [int]
+                        }
+                    }
+                    return 0
+                }
+            ))
+            $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
                 'Description',
                 {
                     # From ?<PowerShell_HelpField> in Irregular (https://github.com/StartAutomating/Irregular)
@@ -210,6 +258,33 @@
                     ', 'IgnoreCase,IgnorePatternWhitespace', [Timespan]::FromSeconds(1)).Match(
                         $this.ScriptBlock
                 ).Groups["Content"].Value
+            }))
+
+            $extCmd.PSObject.Methods.Add([psscriptmethod]::new('Validate', {
+                param([PSObject]$ValidateInput)
+
+                
+                foreach ($attr in $this.ScriptBlock.Attributes) {
+                    if ($attr -is [Management.Automation.ValidateSetAttribute]) {
+                        if ($ValidateInput -notin $attr.ValidValues) {
+                            Write-Error "'$ValidateInput' is not a valid value.  Valid values are '$(@($attr.ValueValues) -join "','")'"
+                            return
+                        }
+                    }
+                    if ($attr -is [Management.Automation.ValidatePatternAttribute]) {
+                        $matched = [Regex]::new($attr.RegexPattern, $attr.Options, [Timespan]::FromSeconds(1)).Match($ValidateInput)
+                        if (-not $matched.Success) {
+                            "'$ValidateInput' is not a valid value.  Valid values must match the pattern '$($attr.RegexPattern)'"
+                            return
+                        }
+                    }
+                    if ($attr -is [Management.Automation.ValidateScriptAttribute]) {
+                        $_ = $ValidateInput 
+                        $validateResult = $attr.ScriptBlock.Invoke($ValidateInput)
+                        if (-not $validateResult) { return }
+                    }
+                }
+                return $true
             }))
 
             $extCmd.PSObject.Methods.Add([PSScriptMethod]::new('GetDynamicParameters', {
@@ -352,6 +427,18 @@
             }
             process {
                 $extCmd = $_
+                if ($ValidateInput) {
+                    try {
+                        if (-not $extCmd.Validate($ValidateInput)) {
+                            return
+                        }
+                    } catch {
+                        Write-Error $_
+                        return
+                    }
+                }
+                
+
                 if ($DynamicParameter -or $DynamicParameterSetName -or $DynamicParameterPositionOffset -or $NoMandatoryDynamicParameter) {
                     $extensionParams = $extCmd.GetDynamicParameters($DynamicParameterSetName, $DynamicParameterPositionOffset, $NoMandatoryDynamicParameter, $CommandName)
                     foreach ($kv in $extensionParams.GetEnumerator()) {
@@ -375,7 +462,7 @@
                     }
                 }
                 elseif ($CouldRun) {
-
+                    if (-not $extCmd) { return }
                     $couldRunExt = $extCmd.CouldRun($Parameter)
                     if (-not $couldRunExt) { return }
                     [PSCustomObject][Ordered]@{
@@ -387,6 +474,7 @@
                     return
                 }
                 elseif ($Run) {
+                    if (-not $extCmd) { return }
                     $couldRunExt = $extCmd.CouldRun($Parameter)
                     if (-not $couldRunExt) { return }
                     if ($extCmd.InheritanceLevel -eq 'InheritedReadOnly') { return }
@@ -417,9 +505,9 @@
 
         $extensionFullRegex =
             if ($ExtensionModule) {
-                "\.(?>$(@(@($ExtensionModule) + $ExtensionModuleAlias) -join '|'))\." + $ExtensionNameRegEx
+                "\.(?>$(@(@($ExtensionModule) + $ExtensionModuleAlias) -join '|'))\." + $ExtensionPattern
             } else {
-                $ExtensionNameRegEx
+                $ExtensionPattern
             }
 
         #region Find Extensions
@@ -486,10 +574,12 @@
                 Where-Object Name -Match $extensionFullRegex |
                 ConvertToExtension |
                 . WhereExtends $CommandName |
+                Sort-Object Rank, Name |
                 OutputExtension
         } else {
             $script:Extensions |
-                . WhereExtends $CommandName |
+                . WhereExtends $CommandName |                
+                Sort-Object Rank, Name |
                 OutputExtension
         }
     }

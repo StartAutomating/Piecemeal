@@ -1,4 +1,8 @@
-﻿## 0.1.5
+﻿# 0.1.6
+* Get-Extension now supports all validation attributes (#26/#25)
+---
+
+## 0.1.5
 * Extensions are now Sortable (#19)
 * Get-Extension supports -ExtensionName (#20)
 * Get-Extension/Install-Piecemeal renaming parameter -ExtensionNameRegex to -ExtensionPattern (#21)

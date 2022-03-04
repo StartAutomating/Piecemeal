@@ -12,6 +12,10 @@
                 ProjectURI = 'https://github.com/StartAutomating/Piecemeal'
                 LicenseURI = 'https://github.com/StartAutomating/Piecemeal/blob/main/LICENSE'
                 ReleaseNotes = @'
+## 0.1.9
+* Get-Extension: Fixing CouldRun/Run issue with multiple ParameterSets (with other attributes present) (#31)
+---
+
 ## 0.1.8
 * Get-Extension: Fixing CouldRun/Run issue with multiple ParameterSets (#31)
 * Install-Piecemeal: Improving Install Message (#32)

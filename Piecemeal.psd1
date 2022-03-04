@@ -1,5 +1,5 @@
 ﻿@{
-    ModuleVersion = '0.1.8'
+    ModuleVersion = '0.1.9'
     RootModule    = 'Piecemeal.psm1'
     Description   = 'Easy Extensible Plugins for PowerShell'
     GUID          = '91e2c328-d7dc-44a3-aeeb-ef3b19c36767'

@@ -133,6 +133,10 @@ describe Piecemeal {
                 Where-Object ParameterSetName |
                 Select-Object -ExpandProperty ParameterSetName |
                 Should -Match 'Foo|Bar'
+
+            Get-Extension -ExtensionPath $pwd -ExtensionName 06* -Like -CouldRun -Parameter @{"foo"="foo"} | Should -Not -Be $null
+            Get-Extension -ExtensionPath $pwd -ExtensionName 06* -Like -CouldRun -Parameter @{"bar"="bar"} | Should -Not -Be $null
+            Get-Extension -ExtensionPath $pwd -ExtensionName 06* -Like -CouldRun -Parameter @{"foog"="foo"} | Should -Be $null
         }
     }
 

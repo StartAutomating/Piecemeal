@@ -216,7 +216,9 @@
             if (-not $NoLogo) {
                 $installInstructions =
                     @(
-                    "(Install-Module $($myModule.Name); $($MyInvocation.MyCommand.Name)"
+                    "Install-Module $($myModule.Name) -Scope CurrentUser"
+                    "$([Environment]::NewLine)# Import-Module $($myModule.Name)" 
+                    "$([Environment]::NewLine)# $($MyInvocation.MyCommand.Name)"
                     $(if ($myParams.Verb) {"-Verb $($verb -join ',')"})
                     @(foreach ($kv in $myParams.GetEnumerator()) {
                         if ($kv.Value -is [switch] -and $kv.Value) {
@@ -226,8 +228,7 @@
                         } elseif ($kv.Value -is [string[]]) {
                             "-$($kv.Key) '$($kv.Value -join "','")'"
                         }
-                    }) | Sort-Object
-                    ')'
+                    }) | Sort-Object                    
                     ) -join ' '
                 $logo = @(
                     $myModule.Name

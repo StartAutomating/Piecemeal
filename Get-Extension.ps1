@@ -408,7 +408,7 @@
                                     }
                                 }
                             }
-                            if ($myParam.Attributes.Mandatory) { # If the parameter was mandatory,
+                            if ($myParam.IsMandatory) { # If the parameter was mandatory,
                                 $myParam.Name # keep track of it.
                             }
                         })

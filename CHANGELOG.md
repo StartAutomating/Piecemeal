@@ -1,9 +1,14 @@
-﻿# 0.1.7
+﻿## 0.1.8
+* Get-Extension: Fixing CouldRun/Run issue with multiple ParameterSets (#31)
+* Install-Piecemeal: Improving Install Message (#32)
+---
+
+## 0.1.7
 * Get-Extension: Now inherits ParameterSetName (#28)
 * Get-Extension: Fixing issue properly displaying Valid Set (#29)
 ---
 
-# 0.1.6
+## 0.1.6
 * Get-Extension now supports all validation attributes (#26/#25)
 ---
 

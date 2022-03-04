@@ -61,6 +61,19 @@ describe Piecemeal {
             [ValidatePattern('a{0,1}')]
             param()
         } | Set-Content .\05.ext.ps1
+
+        {
+            [CmdletBinding(DefaultParameterSetName='Foo')]
+            param(
+            [Parameter(Mandatory,ParameterSetName='Foo')]
+            [string]
+            $Foo,
+
+            [Parameter(Mandatory,ParameterSetName='Bar')]
+            [string]
+            $Bar
+            )
+        } | Set-Content .\06.ext.ps1
     }
     context 'Get-Extension' {
         it '-ExtensionPath' {        
@@ -103,10 +116,23 @@ describe Piecemeal {
         }
 
         it 'Can -ValidateInput' {
-             Get-Extension -ExtensionPath $pwd -ExtensionName 05* -Like -ValidateInput c | Should -Be $null
-             Get-Extension -ExtensionPath $pwd -ExtensionName 05* -Like -ValidateInput a | 
+            $ev = $null
+            Get-Extension -ExtensionPath $pwd -ExtensionName 05* -Like -ValidateInput c -ErrorVariable ev -ErrorAction SilentlyContinue | 
+                Should -Be $null
+            $ev | Should -BeLike "*'c'*'a'*"
+            Get-Extension -ExtensionPath $pwd -ExtensionName 05* -Like -ValidateInput a | 
                 Select-Object -ExpandProperty Name | 
                 Should -BeLike 05*
+            
+        }
+
+        it 'Can keep the parameter set when getting -DynamicParameter' {
+            $dp  = Get-Extension -ExtensionPath $pwd -ExtensionName 06* -Like -DynamicParameter
+            $dp.Values |
+                Select-Object -ExpandProperty Attributes |
+                Where-Object ParameterSetName |
+                Select-Object -ExpandProperty ParameterSetName |
+                Should -Match 'Foo|Bar'
         }
     }
 

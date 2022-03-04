@@ -271,7 +271,7 @@
                     foreach ($attr in $this.ScriptBlock.Attributes) {
                         if ($attr -is [Management.Automation.ValidateSetAttribute]) {
                             if ($ValidateInput -notin $attr.ValidValues) {
-                                throw "'$ValidateInput' is not a valid value.  Valid values are '$(@($attr.ValueValues) -join "','")'"
+                                throw "'$ValidateInput' is not a valid value.  Valid values are '$(@($attr.ValidValues) -join "','")'"
                             }
                         }
                         if ($attr -is [Management.Automation.ValidatePatternAttribute]) {

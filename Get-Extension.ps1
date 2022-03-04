@@ -347,7 +347,10 @@
                                                 break
                                             }
                                         }
-                                    if ($defaultParamSetName) {
+                                    if ($attrCopy.ParameterSetName -ne '__AllParameterSets') {
+                                        $attrCopy.ParameterSetName
+                                    }
+                                    elseif ($defaultParamSetName) {
                                         $defaultParamSetName
                                     }
                                     elseif ($this -is [Management.Automation.FunctionInfo]) {

@@ -1,5 +1,5 @@
 ﻿@{
-    ModuleVersion = '0.1.6'
+    ModuleVersion = '0.1.7'
     RootModule    = 'Piecemeal.psm1'
     Description   = 'Easy Extensible Plugins for PowerShell'
     GUID          = '91e2c328-d7dc-44a3-aeeb-ef3b19c36767'
@@ -12,6 +12,10 @@
                 ProjectURI = 'https://github.com/StartAutomating/Piecemeal'
                 LicenseURI = 'https://github.com/StartAutomating/Piecemeal/blob/main/LICENSE'
                 ReleaseNotes = @'
+# 0.1.7
+* Get-Extension: Now inherits ParameterSetName (#28)
+* Get-Extension: Fixing issue properly displaying Valid Set (#29)
+---
 # 0.1.6
 * Get-Extension now supports all validation attributes (#26/#25)
 ---

@@ -394,32 +394,32 @@
             $extCmd.PSObject.Methods.Add([PSScriptMethod]::new('CouldRun', {
                 param([Collections.IDictionary]$params)
 
-                $mappedParams = [Ordered]@{} # Create a collection of mapped parameters
-                $mandatories  =  # Walk thru each parameter of this command
-                    @(foreach ($myParam in $this.Parameters.GetEnumerator()) {
-                        if ($params.Contains($myParam.Key)) { # If this was in Params,
-                            $mappedParams[$myParam.Key] = $params[$myParam.Key] # then map it.
-                        } else {
-                            foreach ($paramAlias in $myParam.Value.Aliases) { # Otherwise, check the aliases
-                                if ($params.Contains($paramAlias)) { # and map it if the parameters had the alias.
-                                    $mappedParams[$myParam.Key] = $params[$paramAlias]
-                                    break
+                :nextParameterSet foreach ($paramSet in $this.ParameterSets) {
+                    $mappedParams = [Ordered]@{} # Create a collection of mapped parameters
+                    $mandatories  =  # Walk thru each parameter of this command                
+                        @(foreach ($myParam in $paramSet.Parameters) {
+                            if ($params.Contains($myParam.Name)) { # If this was in Params,
+                                $mappedParams[$myParam.Name] = $params[$myParam.Name] # then map it.
+                            } else {
+                                foreach ($paramAlias in $myParam.Aliases) { # Otherwise, check the aliases
+                                    if ($params.Contains($paramAlias)) { # and map it if the parameters had the alias.
+                                        $mappedParams[$myParam.Name] = $params[$paramAlias]
+                                        break
+                                    }
                                 }
                             }
+                            if ($myParam.Attributes.Mandatory) { # If the parameter was mandatory,
+                                $myParam.Name # keep track of it.
+                            }
+                        })
+                    foreach ($mandatoryParam in $mandatories) { # Walk thru each mandatory parameter.
+                        if (-not $params.Contains($mandatoryParam)) { # If it wasn't in the parameters.
+                            continue nextParameterSet
                         }
-                        if ($myParam.value.Attributes.Mandatory) { # If the parameter was mandatory,
-                            $myParam.Key # keep track of it.
-                        }
-                    })
-
-                foreach ($mandatoryParam in $mandatories) { # Walk thru each mandatory parameter.
-                    if (-not $params.Contains($mandatoryParam)) { # If it wasn't in the parameters.
-                        return $false # return $false (note, for now, this prevents parameter sets from working in extensions)
                     }
+                    return $mappedParams                        
                 }
-                return $mappedParams
-
-
+                return $false
             }))
 
             $extCmd.pstypenames.clear()

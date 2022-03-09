@@ -1,4 +1,9 @@
-﻿## 0.1.9
+﻿## 0.1.10
+* Get-Extension:  Adding -ParameterSetName (#36)
+* Install-Piecmeal:  Adding -Force to Import-Module in Install Note (#32)
+---
+
+## 0.1.9
 * Get-Extension: Fixing CouldRun/Run issue with multiple ParameterSets (with other attributes present) (#31)
 ---
 

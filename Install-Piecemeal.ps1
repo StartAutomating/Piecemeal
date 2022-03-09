@@ -217,7 +217,7 @@
                 $installInstructions =
                     @(
                     "Install-Module $($myModule.Name) -Scope CurrentUser"
-                    "$([Environment]::NewLine)# Import-Module $($myModule.Name)" 
+                    "$([Environment]::NewLine)# Import-Module $($myModule.Name) -Force" 
                     "$([Environment]::NewLine)# $($MyInvocation.MyCommand.Name)"
                     $(if ($myParams.Verb) {"-Verb $($verb -join ',')"})
                     @(foreach ($kv in $myParams.GetEnumerator()) {

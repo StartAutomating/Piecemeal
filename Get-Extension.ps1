@@ -139,7 +139,11 @@
     [Parameter(ValueFromPipelineByPropertyName)]
     [Collections.IDictionary]
     [Alias('Parameters','ExtensionParameter','ExtensionParameters')]
-    $Parameter = @{}
+    $Parameter = @{},
+
+    # If set, will output the help for the extensions
+    [switch]
+    $Help
     )
 
     begin {
@@ -505,6 +509,13 @@
                         }
                     }
                     return
+                }
+                elseif ($Help) {
+                    if ($extCmd -is [Management.Automation.ExternalScriptInfo]) {
+                        Get-Help $extCmd.Source
+                    } elseif ($extCmd -is [Management.Automation.FunctionInfo]) {
+                        Get-Help $extCmd
+                    }                    
                 }
                 else {
                     return $extCmd

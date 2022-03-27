@@ -139,7 +139,24 @@
     [Parameter(ValueFromPipelineByPropertyName)]
     [Collections.IDictionary]
     [Alias('Parameters','ExtensionParameter','ExtensionParameters')]
-    $Parameter = @{}
+    $Parameter = @{},
+
+    # If set, will output the help for the extensions
+    [switch]
+    $Help,
+
+    # If set, will get help about one or more parameters of an extension
+    [string[]]
+    $ParameterHelp,
+
+    # If set, will get help examples
+    [Alias('Examples')]
+    [switch]
+    $Example,
+
+    # If set, will output the full help for the extensions
+    [switch]
+    $FullHelp
     )
 
     begin {
@@ -169,19 +186,14 @@
                         return
                     } while ($false)                    
                 }
-                if ($Command) {
-                    foreach ($ext in $ExtensionCommand.ExtensionCommands) {
-                        if ($ext.Name -in $command) {
-                            $commandExtended = $ext
-                            return $ExtensionCommand
-                        }
-                    }
+                if ($Command -and $ExtensionCommand.Extends.$command) {
+                    $commandExtended = $ext
+                    return $ExtensionCommand
                 }
                 elseif (-not $command) {
                     return $ExtensionCommand
                 }
             }
-
         }
         filter ConvertToExtension {
             $in = $_
@@ -198,28 +210,36 @@
 
             $hasExtensionAttribute = $false
             $extends     = @()
+            $extCmd.PSObject.Properties.Add([PSScriptProperty]::new('ExtensionCommands', {
+                $allLoadedCmds = $ExecutionContext.SessionState.InvokeCommand.GetCommands('*','Alias,Function', $true)
+                $extends = @{}
+                foreach ($loadedCmd in $allLoadedCmds) {
+                    foreach ($attr in $this.ScriptBlock.Attributes) {
+                        if ($attr -isnot [Management.Automation.CmdletAttribute]) { continue }
+                        $extensionCommandName = (
+                            ($attr.VerbName -replace '\s') + '-' + ($attr.NounName -replace '\s')
+                        ) -replace '^\-' -replace '\-$'
+                        if ($extensionCommandName -and $loadedCmd.Name -match $extensionCommandName) {                            
+                            $loadedCmd
+                            $extends[$loadedCmd.Name] = $loadedCmd
+                        }
+                    }
+                }
+
+                if (-not $extends.Count) {
+                    $extends = $null
+                }
+                
+                $this | Add-Member NoteProperty Extends $extends -Force
+            }))
+            
             $inheritanceLevel = [ComponentModel.InheritanceLevel]::Inherited
-            foreach ($attr in $extCmd.ScriptBlock.Attributes) {
-                if ($attr -is [Runtime.CompilerServices.ExtensionAttribute]) {
-                    $hasExtensionAttribute = $true
-                }
-                if ($attr -is [Management.Automation.CmdletAttribute]) {
-                    $extensionCommandName = (
-                        ($attr.VerbName -replace '\s') + '-' + ($attr.NounName -replace '\s')
-                    ) -replace '^\-' -replace '\-$'
-                    $extends +=
-                        $ExecutionContext.SessionState.InvokeCommand.GetCommand($extensionCommandName, 'Function')
-                }
-                if ($attr -is [ComponentModel.InheritanceAttribute]) {
-                    $inheritanceLevel = $attr.InheritanceLevel
-                }
-            }
-
+            $extensionCommandList = $extCmd.ExtensionCommands
+            $extends = $extCmd.Extends
             if (-not $hasExtensionAttribute -and $RequireExtensionAttribute) { return }
-            if (-not $extends -and $RequireExtensionAttribute) { return }
-
-            $extCmd.PSObject.Properties.Add([PSNoteProperty]::new('Extends', $extends.Name))
-            $extCmd.PSObject.Properties.Add([PSNoteProperty]::new('ExtensionCommands', $extends))
+            if (-not $Extends -and $RequireExtensionAttribute) { return }
+            
+            
             $extCmd.PSObject.Properties.Add([PSNoteProperty]::new('InheritanceLevel', $inheritanceLevel))
             $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
                 'DisplayName', [ScriptBlock]::Create("`$this.Name -replace '$extensionFullRegex'")
@@ -264,6 +284,8 @@
                         $this.ScriptBlock
                 ).Groups["Content"].Value
             }))
+            
+            
 
             $extCmd.PSObject.Methods.Add([psscriptmethod]::new('Validate', {
                 param([PSObject]$ValidateInput)
@@ -380,7 +402,7 @@
                     if ($commandList -and $validCommandNames) {
                         :CheckCommandValidity do { 
                             foreach ($vc in $validCommandNames) {
-                                if ($commandList -contains $vc) { break CheckCommandValidity }
+                                if ($commandList -match $vc) { break CheckCommandValidity }
                             }
                             continue nextDynamicParameter
                         } while ($false)
@@ -506,6 +528,24 @@
                     }
                     return
                 }
+                elseif ($Help -or $FullHelp -or $Example -or $ParameterHelp) {
+                    $getHelpSplat = @{}
+                    if ($FullHelp) {
+                        $getHelpSplat["Full"] = $true
+                    }
+                    if ($Example) {
+                        $getHelpSplat["Example"] = $true
+                    }
+                    if ($ParameterHelp) {
+                        $getHelpSplat["ParameterHelp"] = $ParameterHelp
+                    }
+
+                    if ($extCmd -is [Management.Automation.ExternalScriptInfo]) {
+                        Get-Help $extCmd.Source @getHelpSplat
+                    } elseif ($extCmd -is [Management.Automation.FunctionInfo]) {
+                        Get-Help $extCmd @getHelpSplat
+                    }                                        
+                }                
                 else {
                     return $extCmd
                 }

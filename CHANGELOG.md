@@ -1,4 +1,12 @@
-﻿## 0.1.10
+﻿## 0.2
+* Adding formatting for extensions (#40)
+* Updating Piecemeal tests (account for Regex) (#39)
+* Get-Extension:  Regex support for [Cmdlet] attribute (#39)
+* Get-Extension:  Adding -FullHelp, -ParameterHelp, -Example(s) (#38)
+* Get-Extension:  Adding -Help (#38)
+---
+
+## 0.1.10
 * Get-Extension:  Adding -ParameterSetName (#36)
 * Install-Piecmeal:  Adding -Force to Import-Module in Install Note (#32)
 ---

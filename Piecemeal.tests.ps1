@@ -45,11 +45,11 @@ describe Piecemeal {
             .Synopsis
                 Cmdlet Extension
             .Description
-                This extension extends a particular cmdlet
+                This extension extends any cmdlet whose name starts with g
             #>            
             param(
             [Parameter(Mandatory)]
-            [Management.Automation.Cmdlet("Get","Extension")]
+            [Management.Automation.Cmdlet('^g',"Extension")]
             [int]$Int
             )
             $int

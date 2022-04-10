@@ -133,13 +133,19 @@
     # The name of the parameter set.  This is used by -CouldRun and -Run to enforce a single specific parameter set.
     [Parameter(ValueFromPipelineByPropertyName)]
     [string]
-    $ParameterSetName,
+    $ParameterSetName,    
 
     # The parameters to the extension.  Only used when determining if the extension -CouldRun.
     [Parameter(ValueFromPipelineByPropertyName)]
     [Collections.IDictionary]
     [Alias('Parameters','ExtensionParameter','ExtensionParameters')]
     $Parameter = @{},
+
+    # If set, will output a steppable pipeline for the extension.
+    # Steppable pipelines allow you to control how begin, process, and end are executed in an extension.
+    # This allows for the execution of more than one extension at a time.
+    [switch]
+    $SteppablePipeline,
 
     # If set, will output the help for the extensions
     [switch]
@@ -186,7 +192,7 @@
                         return
                     } while ($false)                    
                 }
-                if ($Command -and $ExtensionCommand.Extends.$command) {
+                if ($Command -and $ExtensionCommand.Extends -contains $command) {
                     $commandExtended = $ext
                     return $ExtensionCommand
                 }
@@ -209,8 +215,8 @@
                 }
 
             $hasExtensionAttribute = $false
-            $extends     = @()
-            $extCmd.PSObject.Properties.Add([PSScriptProperty]::new('ExtensionCommands', {
+                        
+            $extCmd.PSObject.Methods.Add([psscriptmethod]::new('GetExtendedCommands', {
                 $allLoadedCmds = $ExecutionContext.SessionState.InvokeCommand.GetCommands('*','Alias,Function', $true)
                 $extends = @{}
                 foreach ($loadedCmd in $allLoadedCmds) {
@@ -230,15 +236,14 @@
                     $extends = $null
                 }
                 
-                $this | Add-Member NoteProperty Extends $extends -Force
+                $this | Add-Member NoteProperty Extends $extends.Keys -Force
+                $this | Add-Member NoteProperty ExtensionCommands $extends.Values -Force
             }))
-            
+                        
+            $null = $extCmd.GetExtendedCommands()            
+
             $inheritanceLevel = [ComponentModel.InheritanceLevel]::Inherited
-            $extensionCommandList = $extCmd.ExtensionCommands
-            $extends = $extCmd.Extends
             if (-not $hasExtensionAttribute -and $RequireExtensionAttribute) { return }
-            if (-not $Extends -and $RequireExtensionAttribute) { return }
-            
             
             $extCmd.PSObject.Properties.Add([PSNoteProperty]::new('InheritanceLevel', $inheritanceLevel))
             $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
@@ -283,9 +288,7 @@
                     ', 'IgnoreCase,IgnorePatternWhitespace', [Timespan]::FromSeconds(1)).Match(
                         $this.ScriptBlock
                 ).Groups["Content"].Value
-            }))
-            
-            
+            }))                        
 
             $extCmd.PSObject.Methods.Add([psscriptmethod]::new('Validate', {
                 param([PSObject]$ValidateInput)
@@ -510,6 +513,31 @@
                     }
 
                     return
+                }
+                elseif ($SteppablePipeline) {
+                    if (-not $extCmd) { return }
+                    if ($Parameter) {
+                        $couldRunExt = $extCmd.CouldRun($Parameter, $ParameterSetName)
+                        if (-not $couldRunExt) {
+                            $sb = {& $extCmd }
+                            $sb.GetSteppablePipeline() | 
+                                Add-Member NoteProperty ExtensionCommand $extCmd -Force -PassThru |
+                                Add-Member NoteProperty ExtensionParameters $couldRunExt -Force -PassThru |
+                                Add-Member NoteProperty ExtensionScriptBlock $sb -Force -PassThru
+                        } else {
+                            $sb = {& $extCmd @couldRunExt}
+                            $sb.GetSteppablePipeline() | 
+                                Add-Member NoteProperty ExtensionCommand $extCmd -Force -PassThru |
+                                Add-Member NoteProperty ExtensionParameters $couldRunExt -Force -PassThru |
+                                Add-Member NoteProperty ExtensionScriptBlock $sb -Force -PassThru
+                        }
+                    } else {
+                        $sb = {& $extCmd }
+                        $sb.GetSteppablePipeline() | 
+                            Add-Member NoteProperty ExtensionCommand $extCmd -Force -PassThru |
+                            Add-Member NoteProperty ExtensionParameters @{} -Force -PassThru |
+                            Add-Member NoteProperty ExtensionScriptBlock $sb -Force -PassThru
+                    }                    
                 }
                 elseif ($Run) {
                     if (-not $extCmd) { return }

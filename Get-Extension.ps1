@@ -125,21 +125,32 @@
     [switch]
     $RequireCmdletAttribute,
 
-    # If set, will validate this input against [ValidateScript], [ValidatePattern], and [ValidateSet] attributes found on an extension.
+    # If set, will validate this input against [ValidateScript], [ValidatePattern], [ValidateSet], and [ValidateRange] attributes found on an extension.
     [Parameter(ValueFromPipelineByPropertyName)]
     [PSObject]
     $ValidateInput,
 
+    # If set, will validate this input against all [ValidateScript], [ValidatePattern], [ValidateSet], and [ValidateRange] attributes found on an extension.
+    # By default, if any validation attribute returned true, the extension is considered validated.
+    [switch]
+    $AllValid,
+
     # The name of the parameter set.  This is used by -CouldRun and -Run to enforce a single specific parameter set.
     [Parameter(ValueFromPipelineByPropertyName)]
     [string]
-    $ParameterSetName,
+    $ParameterSetName,    
 
     # The parameters to the extension.  Only used when determining if the extension -CouldRun.
     [Parameter(ValueFromPipelineByPropertyName)]
     [Collections.IDictionary]
     [Alias('Parameters','ExtensionParameter','ExtensionParameters')]
     $Parameter = @{},
+
+    # If set, will output a steppable pipeline for the extension.
+    # Steppable pipelines allow you to control how begin, process, and end are executed in an extension.
+    # This allows for the execution of more than one extension at a time.
+    [switch]
+    $SteppablePipeline,
 
     # If set, will output the help for the extensions
     [switch]
@@ -186,7 +197,7 @@
                         return
                     } while ($false)                    
                 }
-                if ($Command -and $ExtensionCommand.Extends.$command) {
+                if ($Command -and $ExtensionCommand.Extends -contains $command) {
                     $commandExtended = $ext
                     return $ExtensionCommand
                 }
@@ -209,8 +220,8 @@
                 }
 
             $hasExtensionAttribute = $false
-            $extends     = @()
-            $extCmd.PSObject.Properties.Add([PSScriptProperty]::new('ExtensionCommands', {
+                        
+            $extCmd.PSObject.Methods.Add([psscriptmethod]::new('GetExtendedCommands', {
                 $allLoadedCmds = $ExecutionContext.SessionState.InvokeCommand.GetCommands('*','Alias,Function', $true)
                 $extends = @{}
                 foreach ($loadedCmd in $allLoadedCmds) {
@@ -230,15 +241,14 @@
                     $extends = $null
                 }
                 
-                $this | Add-Member NoteProperty Extends $extends -Force
+                $this | Add-Member NoteProperty Extends $extends.Keys -Force
+                $this | Add-Member NoteProperty ExtensionCommands $extends.Values -Force
             }))
-            
+                        
+            $null = $extCmd.GetExtendedCommands()            
+
             $inheritanceLevel = [ComponentModel.InheritanceLevel]::Inherited
-            $extensionCommandList = $extCmd.ExtensionCommands
-            $extends = $extCmd.Extends
             if (-not $hasExtensionAttribute -and $RequireExtensionAttribute) { return }
-            if (-not $Extends -and $RequireExtensionAttribute) { return }
-            
             
             $extCmd.PSObject.Properties.Add([PSNoteProperty]::new('InheritanceLevel', $inheritanceLevel))
             $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
@@ -283,42 +293,67 @@
                     ', 'IgnoreCase,IgnorePatternWhitespace', [Timespan]::FromSeconds(1)).Match(
                         $this.ScriptBlock
                 ).Groups["Content"].Value
-            }))
-            
-            
+            }))                        
 
             $extCmd.PSObject.Methods.Add([psscriptmethod]::new('Validate', {
-                param([PSObject]$ValidateInput)
-
-                try {
-                    # We can attempt to create a variable using our attributes and $validateInput
-                    [psvariable]::new("validating", $ValidateInput, 'None', $this.Attributes)
-                } catch {
-                    $ex = $_ # If this throws an exception, we may wish to clean it up.
-                    foreach ($attr in $this.ScriptBlock.Attributes) {
-                        if ($attr -is [Management.Automation.ValidateSetAttribute]) {
-                            if ($ValidateInput -notin $attr.ValidValues) {
+                param(
+                    # input being validated
+                    [PSObject]$ValidateInput, 
+                    # If set, will require all [Validate] attributes to be valid.
+                    # If not set, any input will be valid.
+                    [switch]$AllValid
+                )
+                
+                foreach ($attr in $this.ScriptBlock.Attributes) {
+                    if ($attr -is [Management.Automation.ValidateSetAttribute]) {
+                        if ($ValidateInput -notin $attr.ValidValues) {
+                            if ($ErrorActionPreference -eq 'ignore') {
+                                return $false
+                            } elseif ($AllValid) {
                                 throw "'$ValidateInput' is not a valid value.  Valid values are '$(@($attr.ValidValues) -join "','")'"
                             }
+                        } elseif (-not $AllValid) {
+                            return $true
                         }
-                        if ($attr -is [Management.Automation.ValidatePatternAttribute]) {
-                            $matched = [Regex]::new($attr.RegexPattern, $attr.Options, [Timespan]::FromSeconds(1)).Match($ValidateInput)
-                            if (-not $matched.Success) {
+                    }
+                    if ($attr -is [Management.Automation.ValidatePatternAttribute]) {
+                        $matched = [Regex]::new($attr.RegexPattern, $attr.Options, [Timespan]::FromSeconds(1)).Match($ValidateInput)
+                        if (-not $matched.Success) {
+                            if ($ErrorActionPreference -eq 'ignore') {
+                                return $false
+                            } elseif ($AllValid) {
                                 throw "'$ValidateInput' is not a valid value.  Valid values must match the pattern '$($attr.RegexPattern)'"
                             }
+                        } elseif (-not $AllValid) {
+                            return $true
                         }
-                        if ($attr -is [Management.Automation.ValidateRangeAttribute]) {
-                            if ($null -ne $attr.MinRange -and $validateInput -lt $attr.MinRange) {
+                    }
+                    if ($attr -is [Management.Automation.ValidateRangeAttribute]) {
+                        if ($null -ne $attr.MinRange -and $validateInput -lt $attr.MinRange) {
+                            if ($ErrorActionPreference -eq 'ignore') {
+                                return $false
+                            } elseif ($AllValid) {
                                 throw "'$ValidateInput' is below the minimum range [ $($attr.MinRange)-$($attr.MaxRange) ]"
                             }
-                            if ($null -ne $attr.MaxRange -and $validateInput -gt $attr.MaxRange) {
+                        }
+                        elseif ($null -ne $attr.MaxRange -and $validateInput -gt $attr.MaxRange) {
+                            if ($ErrorActionPreference -eq 'ignore') {
+                                return $false
+                            } else {
                                 throw "'$ValidateInput' is above the maximum range [ $($attr.MinRange)-$($attr.MaxRange) ]"
                             }
                         }
+                        elseif (-not $AllValid) {
+                            return $true
+                        }
                     }
-                    throw $ex.Exception
                 }
-                return $true
+                            
+                if ($AllValid) {
+                    return $true
+                } else {
+                    return $false
+                }
             }))
 
             $extCmd.PSObject.Methods.Add([PSScriptMethod]::new('GetDynamicParameters', {
@@ -467,7 +502,7 @@
                 $extCmd = $_
                 if ($ValidateInput) {
                     try {
-                        if (-not $extCmd.Validate($ValidateInput)) {
+                        if (-not $extCmd.Validate($ValidateInput, $AllValid)) {
                             return
                         }
                     } catch {
@@ -510,6 +545,31 @@
                     }
 
                     return
+                }
+                elseif ($SteppablePipeline) {
+                    if (-not $extCmd) { return }
+                    if ($Parameter) {
+                        $couldRunExt = $extCmd.CouldRun($Parameter, $ParameterSetName)
+                        if (-not $couldRunExt) {
+                            $sb = {& $extCmd }
+                            $sb.GetSteppablePipeline() | 
+                                Add-Member NoteProperty ExtensionCommand $extCmd -Force -PassThru |
+                                Add-Member NoteProperty ExtensionParameters $couldRunExt -Force -PassThru |
+                                Add-Member NoteProperty ExtensionScriptBlock $sb -Force -PassThru
+                        } else {
+                            $sb = {& $extCmd @couldRunExt}
+                            $sb.GetSteppablePipeline() | 
+                                Add-Member NoteProperty ExtensionCommand $extCmd -Force -PassThru |
+                                Add-Member NoteProperty ExtensionParameters $couldRunExt -Force -PassThru |
+                                Add-Member NoteProperty ExtensionScriptBlock $sb -Force -PassThru
+                        }
+                    } else {
+                        $sb = {& $extCmd }
+                        $sb.GetSteppablePipeline() | 
+                            Add-Member NoteProperty ExtensionCommand $extCmd -Force -PassThru |
+                            Add-Member NoteProperty ExtensionParameters @{} -Force -PassThru |
+                            Add-Member NoteProperty ExtensionScriptBlock $sb -Force -PassThru
+                    }                    
                 }
                 elseif ($Run) {
                     if (-not $extCmd) { return }

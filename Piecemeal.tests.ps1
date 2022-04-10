@@ -58,7 +58,7 @@ describe Piecemeal {
         {
             [ValidateScript({if ($_ -like 'a*') { return $true } else { return $false }})]
             [ValidateSet('a','aa')]
-            [ValidatePattern('a{0,1}')]
+            [ValidatePattern('a{1,}')]
             param()
         } | Set-Content .\05.ext.ps1
 
@@ -74,6 +74,31 @@ describe Piecemeal {
             $Bar
             )
         } | Set-Content .\06.ext.ps1
+
+        {
+            <#
+            .SYNOPSIS
+            .DESCRIPTION
+            #>
+            param(            
+            [string]
+            $Foo,
+
+            [Parameter(ValueFromPipelineByPropertyName)]
+            [string]
+            $Bar
+            )
+
+            begin {
+                'foo'
+            }
+            process {
+                $bar
+            }   
+            end {
+                $foo
+            }
+        } | Set-Content .\07.ext.ps1
     }
     context 'Get-Extension' {
         it '-ExtensionPath' {        
@@ -119,6 +144,9 @@ describe Piecemeal {
             $ev = $null
             Get-Extension -ExtensionPath $pwd -ExtensionName 05* -Like -ValidateInput c -ErrorVariable ev -ErrorAction SilentlyContinue | 
                 Should -Be $null
+            
+            Get-Extension -ExtensionPath $pwd -ExtensionName 05* -Like -ValidateInput c -ErrorVariable ev -ErrorAction SilentlyContinue -AllValid | 
+                Should -Be $null
             $ev | Should -BeLike "*'c'*'a'*"
             Get-Extension -ExtensionPath $pwd -ExtensionName 05* -Like -ValidateInput a | 
                 Select-Object -ExpandProperty Name | 
@@ -137,6 +165,13 @@ describe Piecemeal {
             Get-Extension -ExtensionPath $pwd -ExtensionName 06* -Like -CouldRun -Parameter @{"foo"="foo"} | Should -Not -Be $null
             Get-Extension -ExtensionPath $pwd -ExtensionName 06* -Like -CouldRun -Parameter @{"bar"="bar"} | Should -Not -Be $null
             Get-Extension -ExtensionPath $pwd -ExtensionName 06* -Like -CouldRun -Parameter @{"foog"="foo"} | Should -Be $null
+        }
+
+        it 'Can use a -SteppablePipeline' {
+            $sp  = Get-Extension -ExtensionPath $pwd -ExtensionName 07* -Like -SteppablePipeline -Parameter @{foo='foo'}
+            $sp.Begin($true) 
+            $sp.Process([PSCustomObject]@{Bar='bar'}) | Should -Be @('Foo','Bar')
+            $sp.End() | Should -be 'Foo'
         }
     }
 

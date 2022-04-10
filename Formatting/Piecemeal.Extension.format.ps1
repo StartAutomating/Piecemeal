@@ -12,7 +12,7 @@
         }) -join [Environment]::NewLine
     }    
     Extends = {
-        $_.Extends.Keys -join [Environment]::NewLine
+        $_.Extends -join [Environment]::NewLine
     }
 } -Wrap -ColorProperty @{
     "DisplayName" = {"Success"}

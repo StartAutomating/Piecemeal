@@ -70,7 +70,7 @@ $($ParentNode.CustomControl.CustomEntries.CustomEntry.CustomItem.ExpressionBindi
               </TableColumnItem>
               <TableColumnItem>
                 <ScriptBlock>
-        $_.Extends.Keys -join [Environment]::NewLine
+        $_.Extends -join [Environment]::NewLine
     </ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>

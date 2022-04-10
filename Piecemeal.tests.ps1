@@ -74,6 +74,31 @@ describe Piecemeal {
             $Bar
             )
         } | Set-Content .\06.ext.ps1
+
+        {
+            <#
+            .SYNOPSIS
+            .DESCRIPTION
+            #>
+            param(            
+            [string]
+            $Foo,
+
+            [Parameter(ValueFromPipelineByPropertyName)]
+            [string]
+            $Bar
+            )
+
+            begin {
+                'foo'
+            }
+            process {
+                $bar
+            }   
+            end {
+                $foo
+            }
+        } | Set-Content .\07.ext.ps1
     }
     context 'Get-Extension' {
         it '-ExtensionPath' {        
@@ -137,6 +162,13 @@ describe Piecemeal {
             Get-Extension -ExtensionPath $pwd -ExtensionName 06* -Like -CouldRun -Parameter @{"foo"="foo"} | Should -Not -Be $null
             Get-Extension -ExtensionPath $pwd -ExtensionName 06* -Like -CouldRun -Parameter @{"bar"="bar"} | Should -Not -Be $null
             Get-Extension -ExtensionPath $pwd -ExtensionName 06* -Like -CouldRun -Parameter @{"foog"="foo"} | Should -Be $null
+        }
+
+        it 'Can use a -SteppablePipeline' {
+            $sp  = Get-Extension -ExtensionPath $pwd -ExtensionName 07* -Like -SteppablePipeline -Parameter @{foo='foo'}
+            $sp.Begin($true) 
+            $sp.Process([PSCustomObject]@{Bar='bar'}) | Should -Be @('Foo','Bar')
+            $sp.End() | Should -be 'Foo'
         }
     }
 

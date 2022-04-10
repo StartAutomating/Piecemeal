@@ -58,7 +58,7 @@ describe Piecemeal {
         {
             [ValidateScript({if ($_ -like 'a*') { return $true } else { return $false }})]
             [ValidateSet('a','aa')]
-            [ValidatePattern('a{0,1}')]
+            [ValidatePattern('a{1,}')]
             param()
         } | Set-Content .\05.ext.ps1
 
@@ -143,6 +143,9 @@ describe Piecemeal {
         it 'Can -ValidateInput' {
             $ev = $null
             Get-Extension -ExtensionPath $pwd -ExtensionName 05* -Like -ValidateInput c -ErrorVariable ev -ErrorAction SilentlyContinue | 
+                Should -Be $null
+            
+            Get-Extension -ExtensionPath $pwd -ExtensionName 05* -Like -ValidateInput c -ErrorVariable ev -ErrorAction SilentlyContinue -AllValid | 
                 Should -Be $null
             $ev | Should -BeLike "*'c'*'a'*"
             Get-Extension -ExtensionPath $pwd -ExtensionName 05* -Like -ValidateInput a | 

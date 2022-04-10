@@ -293,34 +293,45 @@
             $extCmd.PSObject.Methods.Add([psscriptmethod]::new('Validate', {
                 param([PSObject]$ValidateInput)
 
-                try {
-                    # We can attempt to create a variable using our attributes and $validateInput
-                    [psvariable]::new("validating", $ValidateInput, 'None', $this.Attributes)
-                } catch {
-                    $ex = $_ # If this throws an exception, we may wish to clean it up.
-                    foreach ($attr in $this.ScriptBlock.Attributes) {
-                        if ($attr -is [Management.Automation.ValidateSetAttribute]) {
-                            if ($ValidateInput -notin $attr.ValidValues) {
+                
+                foreach ($attr in $this.ScriptBlock.Attributes) {
+                    if ($attr -is [Management.Automation.ValidateSetAttribute]) {
+                        if ($ValidateInput -notin $attr.ValidValues) {
+                            if ($ErrorActionPreference -eq 'ignore') {
+                                return $false
+                            } else {
                                 throw "'$ValidateInput' is not a valid value.  Valid values are '$(@($attr.ValidValues) -join "','")'"
                             }
                         }
-                        if ($attr -is [Management.Automation.ValidatePatternAttribute]) {
-                            $matched = [Regex]::new($attr.RegexPattern, $attr.Options, [Timespan]::FromSeconds(1)).Match($ValidateInput)
-                            if (-not $matched.Success) {
+                    }
+                    if ($attr -is [Management.Automation.ValidatePatternAttribute]) {
+                        $matched = [Regex]::new($attr.RegexPattern, $attr.Options, [Timespan]::FromSeconds(1)).Match($ValidateInput)
+                        if (-not $matched.Success) {
+                            if ($ErrorActionPreference -eq 'ignore') {
+                                return $false
+                            } else {
                                 throw "'$ValidateInput' is not a valid value.  Valid values must match the pattern '$($attr.RegexPattern)'"
                             }
                         }
-                        if ($attr -is [Management.Automation.ValidateRangeAttribute]) {
-                            if ($null -ne $attr.MinRange -and $validateInput -lt $attr.MinRange) {
+                    }
+                    if ($attr -is [Management.Automation.ValidateRangeAttribute]) {
+                        if ($null -ne $attr.MinRange -and $validateInput -lt $attr.MinRange) {
+                            if ($ErrorActionPreference -eq 'ignore') {
+                                return $false
+                            } else {
                                 throw "'$ValidateInput' is below the minimum range [ $($attr.MinRange)-$($attr.MaxRange) ]"
                             }
-                            if ($null -ne $attr.MaxRange -and $validateInput -gt $attr.MaxRange) {
+                        }
+                        if ($null -ne $attr.MaxRange -and $validateInput -gt $attr.MaxRange) {
+                            if ($ErrorActionPreference -eq 'ignore') {
+                                return $false
+                            } else {
                                 throw "'$ValidateInput' is above the maximum range [ $($attr.MinRange)-$($attr.MaxRange) ]"
                             }
                         }
                     }
-                    throw $ex.Exception
                 }
+                                                    
                 return $true
             }))
 

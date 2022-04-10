@@ -125,10 +125,15 @@
     [switch]
     $RequireCmdletAttribute,
 
-    # If set, will validate this input against [ValidateScript], [ValidatePattern], and [ValidateSet] attributes found on an extension.
+    # If set, will validate this input against [ValidateScript], [ValidatePattern], [ValidateSet], and [ValidateRange] attributes found on an extension.
     [Parameter(ValueFromPipelineByPropertyName)]
     [PSObject]
     $ValidateInput,
+
+    # If set, will validate this input against all [ValidateScript], [ValidatePattern], [ValidateSet], and [ValidateRange] attributes found on an extension.
+    # By default, if any validation attribute returned true, the extension is considered validated.
+    [switch]
+    $AllValid,
 
     # The name of the parameter set.  This is used by -CouldRun and -Run to enforce a single specific parameter set.
     [Parameter(ValueFromPipelineByPropertyName)]
@@ -291,17 +296,24 @@
             }))                        
 
             $extCmd.PSObject.Methods.Add([psscriptmethod]::new('Validate', {
-                param([PSObject]$ValidateInput)
-
+                param(
+                    # input being validated
+                    [PSObject]$ValidateInput, 
+                    # If set, will require all [Validate] attributes to be valid.
+                    # If not set, any input will be valid.
+                    [switch]$AllValid
+                )
                 
                 foreach ($attr in $this.ScriptBlock.Attributes) {
                     if ($attr -is [Management.Automation.ValidateSetAttribute]) {
                         if ($ValidateInput -notin $attr.ValidValues) {
                             if ($ErrorActionPreference -eq 'ignore') {
                                 return $false
-                            } else {
+                            } elseif ($AllValid) {
                                 throw "'$ValidateInput' is not a valid value.  Valid values are '$(@($attr.ValidValues) -join "','")'"
                             }
+                        } elseif (-not $AllValid) {
+                            return $true
                         }
                     }
                     if ($attr -is [Management.Automation.ValidatePatternAttribute]) {
@@ -309,30 +321,39 @@
                         if (-not $matched.Success) {
                             if ($ErrorActionPreference -eq 'ignore') {
                                 return $false
-                            } else {
+                            } elseif ($AllValid) {
                                 throw "'$ValidateInput' is not a valid value.  Valid values must match the pattern '$($attr.RegexPattern)'"
                             }
+                        } elseif (-not $AllValid) {
+                            return $true
                         }
                     }
                     if ($attr -is [Management.Automation.ValidateRangeAttribute]) {
                         if ($null -ne $attr.MinRange -and $validateInput -lt $attr.MinRange) {
                             if ($ErrorActionPreference -eq 'ignore') {
                                 return $false
-                            } else {
+                            } elseif ($AllValid) {
                                 throw "'$ValidateInput' is below the minimum range [ $($attr.MinRange)-$($attr.MaxRange) ]"
                             }
                         }
-                        if ($null -ne $attr.MaxRange -and $validateInput -gt $attr.MaxRange) {
+                        elseif ($null -ne $attr.MaxRange -and $validateInput -gt $attr.MaxRange) {
                             if ($ErrorActionPreference -eq 'ignore') {
                                 return $false
                             } else {
                                 throw "'$ValidateInput' is above the maximum range [ $($attr.MinRange)-$($attr.MaxRange) ]"
                             }
                         }
+                        elseif (-not $AllValid) {
+                            return $true
+                        }
                     }
                 }
-                                                    
-                return $true
+                            
+                if ($AllValid) {
+                    return $true
+                } else {
+                    return $false
+                }
             }))
 
             $extCmd.PSObject.Methods.Add([PSScriptMethod]::new('GetDynamicParameters', {
@@ -481,7 +502,7 @@
                 $extCmd = $_
                 if ($ValidateInput) {
                     try {
-                        if (-not $extCmd.Validate($ValidateInput)) {
+                        if (-not $extCmd.Validate($ValidateInput, $AllValid)) {
                             return
                         }
                     } catch {

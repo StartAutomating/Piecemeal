@@ -315,7 +315,7 @@
                                 if ($ErrorActionPreference -eq 'ignore') {
                                     return $false
                                 } elseif ($AllValid) {
-                                    throw "'$ValidateInput' is not a valid value. $_"
+                                    throw "'$ValidateInput' is not a valid value."
                                 }                                
                             }
                         } catch {

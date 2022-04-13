@@ -56,8 +56,8 @@ describe Piecemeal {
         } | Set-Content .\04.ext.ps1
 
         {
-            [ValidateScript({if ($_ -like 'a*') { return $true } else { return $false }})]
             [ValidateSet('a','aa')]
+            [ValidateScript({if ($_ -like 'a*') { return $true } else { return $false }})]            
             [ValidatePattern('a{1,}')]
             param()
         } | Set-Content .\05.ext.ps1
@@ -147,7 +147,7 @@ describe Piecemeal {
             
             Get-Extension -ExtensionPath $pwd -ExtensionName 05* -Like -ValidateInput c -ErrorVariable ev -ErrorAction SilentlyContinue -AllValid | 
                 Should -Be $null
-            $ev | Should -BeLike "*'c'*'a'*"
+            $ev | ForEach-Object { $_ | Should -BeLike "*'c'*'a'*" }
             Get-Extension -ExtensionPath $pwd -ExtensionName 05* -Like -ValidateInput a | 
                 Select-Object -ExpandProperty Name | 
                 Should -BeLike 05*

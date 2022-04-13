@@ -1,4 +1,11 @@
-﻿## 0.2.1
+﻿## 0.2.2
+* Adding test for [ValidateScript] (#47)
+* Updating Piecemeal tests (checking validation order) (#48)
+* Get-Extension:  Fixing -ValidateInput logic (#48)
+* Get-Extension:  Fixing support for [ValidateScript] (#47)
+---
+
+## 0.2.1
 * Get-Extension:  Support for -AllValid (#45)
 * Get-Extension:  Removing Validation Errors when -ErrorAction is ignore (#43)
 * Updating Piecemeal tests: Adding test for Steppable Pipeline (#42)

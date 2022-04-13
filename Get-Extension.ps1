@@ -15,6 +15,7 @@
     #>
     [OutputType('Extension')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="PSScriptAnalyzer cannot handle nested scoping")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidAssignmentToAutomaticVariable", "", Justification="Desired for scenario")]
     param(
     # If provided, will look beneath a specific path for extensions.
     [Parameter(ValueFromPipelineByPropertyName)]
@@ -42,12 +43,12 @@
 
     # The name of an extension
     [Parameter(ValueFromPipelineByPropertyName)]
-    [ValidateNotNullOrEmpty()]    
+    [ValidateNotNullOrEmpty()]
     [string[]]
     $ExtensionName,
 
     # If provided, will treat -ExtensionName as a wildcard.
-    [Parameter(ValueFromPipelineByPropertyName)]    
+    [Parameter(ValueFromPipelineByPropertyName)]
     [switch]
     $Like,
 
@@ -81,7 +82,7 @@
     [Alias('CanRun')]
     [switch]
     $CouldRun,
-    
+
     # If set, will run the extension.  If -Stream is passed, results will be directly returned.
     # By default, extension results are wrapped in a return object.
     [Parameter(ValueFromPipelineByPropertyName)]
@@ -138,7 +139,7 @@
     # The name of the parameter set.  This is used by -CouldRun and -Run to enforce a single specific parameter set.
     [Parameter(ValueFromPipelineByPropertyName)]
     [string]
-    $ParameterSetName,    
+    $ParameterSetName,
 
     # The parameters to the extension.  Only used when determining if the extension -CouldRun.
     [Parameter(ValueFromPipelineByPropertyName)]
@@ -186,7 +187,7 @@
                 if ($ExtensionName) {
                     :CheckExtensionName do {
                         foreach ($exn in $ExtensionName) {
-                            if ($like) { 
+                            if ($like) {
                                 if ($extensionCommand -like $exn) { break CheckExtensionName }
                             }
                             elseif ($match) {
@@ -195,7 +196,7 @@
                             elseif ($ExtensionCommand -eq $exn) { break CheckExtensionName }
                         }
                         return
-                    } while ($false)                    
+                    } while ($false)
                 }
                 if ($Command -and $ExtensionCommand.Extends -contains $command) {
                     $commandExtended = $ext
@@ -220,7 +221,7 @@
                 }
 
             $hasExtensionAttribute = $false
-                        
+
             $extCmd.PSObject.Methods.Add([psscriptmethod]::new('GetExtendedCommands', {
                 $allLoadedCmds = $ExecutionContext.SessionState.InvokeCommand.GetCommands('*','Alias,Function', $true)
                 $extends = @{}
@@ -230,7 +231,7 @@
                         $extensionCommandName = (
                             ($attr.VerbName -replace '\s') + '-' + ($attr.NounName -replace '\s')
                         ) -replace '^\-' -replace '\-$'
-                        if ($extensionCommandName -and $loadedCmd.Name -match $extensionCommandName) {                            
+                        if ($extensionCommandName -and $loadedCmd.Name -match $extensionCommandName) {
                             $loadedCmd
                             $extends[$loadedCmd.Name] = $loadedCmd
                         }
@@ -240,16 +241,16 @@
                 if (-not $extends.Count) {
                     $extends = $null
                 }
-                
+
                 $this | Add-Member NoteProperty Extends $extends.Keys -Force
                 $this | Add-Member NoteProperty ExtensionCommands $extends.Values -Force
             }))
-                        
-            $null = $extCmd.GetExtendedCommands()            
+
+            $null = $extCmd.GetExtendedCommands()
 
             $inheritanceLevel = [ComponentModel.InheritanceLevel]::Inherited
             if (-not $hasExtensionAttribute -and $RequireExtensionAttribute) { return }
-            
+
             $extCmd.PSObject.Properties.Add([PSNoteProperty]::new('InheritanceLevel', $inheritanceLevel))
             $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
                 'DisplayName', [ScriptBlock]::Create("`$this.Name -replace '$extensionFullRegex'")
@@ -260,7 +261,7 @@
             $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
                 'Rank', {
                     foreach ($attr in $this.ScriptBlock.Attributes) {
-                        if ($attr -is [Reflection.AssemblyMetaDataAttribute] -and 
+                        if ($attr -is [Reflection.AssemblyMetaDataAttribute] -and
                             $attr.Key -in 'Order', 'Rank') {
                             return $attr.Value -as [int]
                         }
@@ -293,19 +294,39 @@
                     ', 'IgnoreCase,IgnorePatternWhitespace', [Timespan]::FromSeconds(1)).Match(
                         $this.ScriptBlock
                 ).Groups["Content"].Value
-            }))                        
+            }))
 
             $extCmd.PSObject.Methods.Add([psscriptmethod]::new('Validate', {
                 param(
                     # input being validated
-                    [PSObject]$ValidateInput, 
+                    [PSObject]$ValidateInput,
                     # If set, will require all [Validate] attributes to be valid.
                     # If not set, any input will be valid.
                     [switch]$AllValid
                 )
-                
+
                 foreach ($attr in $this.ScriptBlock.Attributes) {
-                    if ($attr -is [Management.Automation.ValidateSetAttribute]) {
+                    if ($attr -is [Management.Automation.ValidateScriptAttribute]) {
+                        try {
+                            $_ = $this = $psItem = $ValidateInput
+                            $isValidInput = . $attr.ScriptBlock
+                            if ($isValidInput -and -not $AllValid) { return $true}
+                            if (-not $isValidInput) {
+                                if ($ErrorActionPreference -eq 'ignore') {
+                                    return $false
+                                } elseif ($AllValid) {
+                                    throw "'$ValidateInput' is not a valid value. $_"
+                                }
+                            }
+                        } catch {
+                            if ($ErrorActionPreference -eq 'ignore') {
+                                return $false
+                            } elseif ($AllValid) {
+                                throw "'$ValidateInput' is not a valid value. $_"
+                            }
+                        }
+                    }
+                    elseif ($attr -is [Management.Automation.ValidateSetAttribute]) {
                         if ($ValidateInput -notin $attr.ValidValues) {
                             if ($ErrorActionPreference -eq 'ignore') {
                                 return $false
@@ -316,7 +337,7 @@
                             return $true
                         }
                     }
-                    if ($attr -is [Management.Automation.ValidatePatternAttribute]) {
+                    elseif ($attr -is [Management.Automation.ValidatePatternAttribute]) {
                         $matched = [Regex]::new($attr.RegexPattern, $attr.Options, [Timespan]::FromSeconds(1)).Match($ValidateInput)
                         if (-not $matched.Success) {
                             if ($ErrorActionPreference -eq 'ignore') {
@@ -328,7 +349,7 @@
                             return $true
                         }
                     }
-                    if ($attr -is [Management.Automation.ValidateRangeAttribute]) {
+                    elseif ($attr -is [Management.Automation.ValidateRangeAttribute]) {
                         if ($null -ne $attr.MinRange -and $validateInput -lt $attr.MinRange) {
                             if ($ErrorActionPreference -eq 'ignore') {
                                 return $false
@@ -348,7 +369,7 @@
                         }
                     }
                 }
-                            
+
                 if ($AllValid) {
                     return $true
                 } else {
@@ -373,7 +394,7 @@
 
                 $ExtensionDynamicParameters = [Management.Automation.RuntimeDefinedParameterDictionary]::new()
                 $Extension = $this
-                
+
                 :nextDynamicParameter foreach ($in in @(([Management.Automation.CommandMetaData]$Extension).Parameters.Keys)) {
                     $attrList = [Collections.Generic.List[Attribute]]::new()
                     $validCommandNames = @()
@@ -397,12 +418,12 @@
                                 }
                             }
 
-                            $attrCopy.ParameterSetName =                                
+                            $attrCopy.ParameterSetName =
                                 if ($ParameterSetName) {
                                     $ParameterSetName
                                 }
                                 else {
-                                    $defaultParamSetName = 
+                                    $defaultParamSetName =
                                         foreach ($extAttr in $Extension.ScriptBlock.Attributes) {
                                             if ($extAttr.DefaultParameterSetName) {
                                                 $extAttr.DefaultParameterSetName
@@ -421,7 +442,7 @@
                                         $this.Source
                                     }
                                 }
-                                                                
+
                             if ($NoMandatory -and $attrCopy.Mandatory) {
                                 $attrCopy.Mandatory = $false
                             }
@@ -435,7 +456,7 @@
 
 
                     if ($commandList -and $validCommandNames) {
-                        :CheckCommandValidity do { 
+                        :CheckCommandValidity do {
                             foreach ($vc in $validCommandNames) {
                                 if ($commandList -match $vc) { break CheckCommandValidity }
                             }
@@ -459,7 +480,7 @@
                 :nextParameterSet foreach ($paramSet in $this.ParameterSets) {
                     if ($ParameterSetName -and $paramSet.Name -ne $ParameterSetName) { continue }
                     $mappedParams = [Ordered]@{} # Create a collection of mapped parameters
-                    $mandatories  =  # Walk thru each parameter of this command                
+                    $mandatories  =  # Walk thru each parameter of this command
                         @(foreach ($myParam in $paramSet.Parameters) {
                             if ($params.Contains($myParam.Name)) { # If this was in Params,
                                 $mappedParams[$myParam.Name] = $params[$myParam.Name] # then map it.
@@ -480,7 +501,7 @@
                             continue nextParameterSet
                         }
                     }
-                    return $mappedParams                        
+                    return $mappedParams
                 }
                 return $false
             }))
@@ -510,7 +531,7 @@
                         return
                     }
                 }
-                
+
 
                 if ($DynamicParameter -or $DynamicParameterSetName -or $DynamicParameterPositionOffset -or $NoMandatoryDynamicParameter) {
                     $extensionParams = $extCmd.GetDynamicParameters($DynamicParameterSetName, $DynamicParameterPositionOffset, $NoMandatoryDynamicParameter, $CommandName)
@@ -552,24 +573,24 @@
                         $couldRunExt = $extCmd.CouldRun($Parameter, $ParameterSetName)
                         if (-not $couldRunExt) {
                             $sb = {& $extCmd }
-                            $sb.GetSteppablePipeline() | 
+                            $sb.GetSteppablePipeline() |
                                 Add-Member NoteProperty ExtensionCommand $extCmd -Force -PassThru |
                                 Add-Member NoteProperty ExtensionParameters $couldRunExt -Force -PassThru |
                                 Add-Member NoteProperty ExtensionScriptBlock $sb -Force -PassThru
                         } else {
                             $sb = {& $extCmd @couldRunExt}
-                            $sb.GetSteppablePipeline() | 
+                            $sb.GetSteppablePipeline() |
                                 Add-Member NoteProperty ExtensionCommand $extCmd -Force -PassThru |
                                 Add-Member NoteProperty ExtensionParameters $couldRunExt -Force -PassThru |
                                 Add-Member NoteProperty ExtensionScriptBlock $sb -Force -PassThru
                         }
                     } else {
                         $sb = {& $extCmd }
-                        $sb.GetSteppablePipeline() | 
+                        $sb.GetSteppablePipeline() |
                             Add-Member NoteProperty ExtensionCommand $extCmd -Force -PassThru |
                             Add-Member NoteProperty ExtensionParameters @{} -Force -PassThru |
                             Add-Member NoteProperty ExtensionScriptBlock $sb -Force -PassThru
-                    }                    
+                    }
                 }
                 elseif ($Run) {
                     if (-not $extCmd) { return }
@@ -604,8 +625,8 @@
                         Get-Help $extCmd.Source @getHelpSplat
                     } elseif ($extCmd -is [Management.Automation.FunctionInfo]) {
                         Get-Help $extCmd @getHelpSplat
-                    }                                        
-                }                
+                    }
+                }
                 else {
                     return $extCmd
                 }
@@ -694,7 +715,7 @@
                 OutputExtension
         } else {
             $script:Extensions |
-                . WhereExtends $CommandName |                
+                . WhereExtends $CommandName |
                 Sort-Object Rank, Name |
                 OutputExtension
         }

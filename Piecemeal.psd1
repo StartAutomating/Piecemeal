@@ -1,5 +1,5 @@
 ﻿@{
-    ModuleVersion    = '0.2.1'
+    ModuleVersion    = '0.2.2'
     RootModule       = 'Piecemeal.psm1'
     Description      = 'Easy Extensible Plugins for PowerShell'
     GUID             = '91e2c328-d7dc-44a3-aeeb-ef3b19c36767'
@@ -13,6 +13,13 @@
               ProjectURI   = 'https://github.com/StartAutomating/Piecemeal'
               LicenseURI   = 'https://github.com/StartAutomating/Piecemeal/blob/main/LICENSE'
               ReleaseNotes = @'
+## 0.2.2
+* Adding test for [ValidateScript] (#47)
+* Updating Piecemeal tests (checking validation order) (#48)
+* Get-Extension:  Fixing -ValidateInput logic (#48)
+* Get-Extension:  Fixing support for [ValidateScript] (#47)
+---
+
 ## 0.2.1
 * Get-Extension:  Support for -AllValid (#45)
 * Get-Extension:  Removing Validation Errors when -ErrorAction is ignore (#43)

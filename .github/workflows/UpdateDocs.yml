@@ -9,7 +9,6 @@ jobs:
     steps: 
       - name: Check out repository
         uses: actions/checkout@v2
-        persistCrendtials: true
       - name: UseHelpOut
         uses: StartAutomating/HelpOut@master
 

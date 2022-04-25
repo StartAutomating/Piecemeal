@@ -179,12 +179,38 @@ describe Piecemeal {
         }
     }
 
+    context 'New-Extension' {
+        it 'Creates extensions' {
+            New-Extension -ScriptBlock {
+                "hello world$(if ($n) {$n})"
+            } -CommandName Get-Foo -ExtensionParameter @{
+                "N"="[int]"
+            } | 
+                Invoke-Expression | 
+                Should -be "hello world"
+        }
+    }
+
     context 'Install-Piecemeal' {
-        it '-ExtensionModule' {
+        it 'Installs extensions for a given module' {
             Install-Piecemeal -ExtensionModule TestModule -ExtensionModuleAlias tm -ExtensionTypeName Test.Extension | 
                 Invoke-Expression
 
             Get-Command Get-TestModuleExtension
+        }
+
+        it 'Can install with a custom -ExtensionNoun' {
+            Install-Piecemeal -ExtensionNoun MyExt -ExtensionModule MyModule | 
+                Invoke-Expression
+
+            Get-Command Get-MyExt
+        }
+
+        it "Can install with -Verb 'New','Get'" {
+            Install-Piecemeal -ExtensionNoun MyExtTest -Verb New, Get -ExtensionModule MyModule | 
+                Invoke-Expression
+
+            New-MyExtTest -ScriptBlock { "hello world"} | Invoke-Expression | Should -Be "Hello world"
         }
     }
        

@@ -23,7 +23,7 @@
 
     # The verbs to install.  By default, installs Get.
     [Parameter(ValueFromPipelineByPropertyName=$true)]
-    [ValidateSet('Get')]
+    [ValidateSet('Get','New')]
     [string[]]
     $Verb = @('Get'),
 
@@ -202,11 +202,19 @@
                 } else {
                     "`$script:${ExtensionModule}Extensions"
                 }
+            
+            $otherDashReplacment = "-$(
+                if ($ExtensionNoun) {
+                    "$ExtensionNoun"
+                } else {
+                    "${ExtensionModule}Extension"
+                })"
 
             $newCommand = $commandString.Insert($insertPoint, $insertion) -replace # Finally, we insert the default values
                 "($($exported.Verb))-($($exported.Noun))", $extensionCommandReplacement -replace # change the name
                 '\$script:Extensions', $extensionVariableReplacer -replace # change the inner variable references,
-                " Extensions ", " $ExtensionModule Extensions " # and update likely documentation mentions
+                " Extensions ", " $ExtensionModule Extensions " -replace # and update likely documentation mentions 
+                "-Extension", $otherDashReplacment
 
             $null = $myOutput.AppendLine($newCommand)
         }

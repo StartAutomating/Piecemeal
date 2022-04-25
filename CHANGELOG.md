@@ -1,4 +1,10 @@
-﻿## 0.2.2
+﻿## 0.2.3
+* Adding New-Extension (#51)
+* Generating Docs (#52)
+* Allowing New-Extension to be installed with Install-Piecemeal
+---
+
+## 0.2.2
 * Adding test for [ValidateScript] (#47)
 * Updating Piecemeal tests (checking validation order) (#48)
 * Get-Extension:  Fixing -ValidateInput logic (#48)

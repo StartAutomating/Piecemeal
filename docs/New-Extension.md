@@ -11,7 +11,7 @@ Creates an Extension
 
 ---
 ### Related Links
-* [](Get-Extension.md)
+* [Get-Extension](Get-Extension.md)
 ---
 ### Examples
 #### EXAMPLE 1

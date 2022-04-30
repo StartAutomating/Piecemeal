@@ -17,7 +17,7 @@
     [OutputType([string])]
     param(
     # The name of the module that is being extended.
-    [Parameter(Mandatory,ValueFromPipelineByPropertyName)]
+    [Parameter(ValueFromPipelineByPropertyName)]
     [string]
     $ExtensionModule,
 
@@ -192,22 +192,28 @@
             $extensionCommandReplacement =
                 if ($ExtensionNoun) {
                     "`$1-$ExtensionNoun"
-                } else {
+                } elseif ($ExtensionModule) {
                     "`$1-$ExtensionModule`$2"
+                } else {
+                    "`$1-Extension"
                 }
 
             $extensionVariableReplacer = 
                 if ($ExtensionNoun) {
                     "`$script:${ExtensionNoun}s"
-                } else {
+                } elseif ($ExtensionModule) {
                     "`$script:${ExtensionModule}Extensions"
+                } else {
+                    "`$script:Extensions"
                 }
             
             $otherDashReplacment = "-$(
                 if ($ExtensionNoun) {
                     "$ExtensionNoun"
-                } else {
+                } elseif ($ExtensionModule) {
                     "${ExtensionModule}Extension"
+                } else {
+                    "Extension"
                 })"
 
             $newCommand = $commandString.Insert($insertPoint, $insertion) -replace # Finally, we insert the default values

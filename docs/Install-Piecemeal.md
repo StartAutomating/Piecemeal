@@ -13,7 +13,7 @@ This enables extensibility within the module.
 
 ---
 ### Related Links
-* [](Get-Extension.md)
+* [Get-Extension](Get-Extension.md)
 ---
 ### Examples
 #### EXAMPLE 1
@@ -31,7 +31,7 @@ The name of the module that is being extended.
 
 |Type          |Requried|Postion|PipelineInput        |
 |--------------|--------|-------|---------------------|
-|```[String]```|true    |1      |true (ByPropertyName)|
+|```[String]```|false   |1      |true (ByPropertyName)|
 ---
 #### **Verb**
 
@@ -124,7 +124,7 @@ System.String
 ---
 ### Syntax
 ```PowerShell
-Install-Piecemeal [-ExtensionModule] <String> [[-Verb] <String[]>] [[-ExtensionModuleAlias] <String[]>] [[-ExtensionPattern] <String>] [[-ExtensionTypeName] <String>] [[-ExtensionNoun] <String>] [-RequireExtensionAttribute] [-RequireCmdletAttribute] [[-OutputPath] <String>] [<CommonParameters>]
+Install-Piecemeal [[-ExtensionModule] <String>] [[-Verb] <String[]>] [[-ExtensionModuleAlias] <String[]>] [[-ExtensionPattern] <String>] [[-ExtensionTypeName] <String>] [[-ExtensionNoun] <String>] [-RequireExtensionAttribute] [-RequireCmdletAttribute] [[-OutputPath] <String>] [<CommonParameters>]
 ```
 ---
 ### Notes

@@ -1,4 +1,8 @@
-﻿## 0.2.3
+﻿## 0.2.4
+* Install-Piecemeal:  Making -ExtensionModule Optional (#54)
+---
+
+## 0.2.3
 * Adding New-Extension (#51)
 * Generating Docs (#52)
 * Allowing New-Extension to be installed with Install-Piecemeal

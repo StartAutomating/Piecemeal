@@ -1,4 +1,9 @@
-﻿## 0.2.4
+﻿## 0.2.5
+* Get-Extension:  Adding -CouldPipe (#58)
+* Get-Extension:  Fixing .Tags based inclusion (#57)
+---
+
+## 0.2.4
 * Install-Piecemeal:  Making -ExtensionModule Optional (#54)
 ---
 

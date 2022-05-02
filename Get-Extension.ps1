@@ -83,6 +83,11 @@
     [switch]
     $CouldRun,
 
+    # If set, will return if the extension could accept this input from the pipeline    
+    [Alias('CanPipe')]
+    [PSObject]
+    $CouldPipe,
+
     # If set, will run the extension.  If -Stream is passed, results will be directly returned.
     # By default, extension results are wrapped in a return object.
     [Parameter(ValueFromPipelineByPropertyName)]
@@ -484,6 +489,36 @@
 
             }))
 
+            $extCmd.PSObject.Methods.Add([PSScriptMethod]::new('CouldPipe', {
+                param([PSObject]$InputObject)
+
+                :nextParameterSet foreach ($paramSet in $this.ParameterSets) {
+                    if ($ParameterSetName -and $paramSet.Name -ne $ParameterSetName) { continue }
+                    $params = @{}
+                    $mappedParams = [Ordered]@{} # Create a collection of mapped parameters
+                    $mandatories  =  # Walk thru each parameter of this command
+                        @(foreach ($myParam in $paramSet.Parameters) {
+                            if ($myParam.ValueFromPipeline) {
+                                if ($null -ne $inputObject -and 
+                                    $myParam.ParameterType -eq $inputObject.GetType()) {
+                                    $mappedParams[$myParam.Name] = $params[$myParam.Name] = $InputObject
+                                }
+                            }
+                            if ($myParam.IsMandatory) { # If the parameter was mandatory,
+                                $myParam.Name # keep track of it.
+                            }
+                        })
+                    foreach ($mandatoryParam in $mandatories) { # Walk thru each mandatory parameter.
+                        if (-not $params.Contains($mandatoryParam)) { # If it wasn't in the parameters.
+                            continue nextParameterSet
+                        }
+                    }
+                    if ($mappedParams.Count -gt 0) {
+                        return $mappedParams
+                    }
+                }
+            }))
+
             $extCmd.PSObject.Methods.Add([PSScriptMethod]::new('CouldRun', {
                 param([Collections.IDictionary]$params, [string]$ParameterSetName)
 
@@ -563,6 +598,17 @@
                         } else {
                             $allDynamicParameters[$kv.Key] = $kv.Value
                         }
+                    }
+                }
+                elseif ($CouldPipe) {
+                    if (-not $extCmd) { return }
+                    $couldPipeExt = $extCmd.CouldPipe($CouldPipe)
+                    if (-not $couldPipeExt) { return }
+                    [PSCustomObject][Ordered]@{
+                        ExtensionCommand = $extCmd
+                        CommandName = $CommandName
+                        ExtensionInputObject = $CouldPipe
+                        ExtensionParameter = $couldPipeExt
                     }
                 }
                 elseif ($CouldRun) {

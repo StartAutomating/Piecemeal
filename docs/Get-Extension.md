@@ -144,6 +144,16 @@ If set, will return if the extension could run
 |--------------|--------|-------|---------------------|
 |```[Switch]```|false   |named  |true (ByPropertyName)|
 ---
+#### **CouldPipe**
+
+If set, will return if the extension could accept this input from the pipeline
+
+
+
+|Type            |Requried|Postion|PipelineInput|
+|----------------|--------|-------|-------------|
+|```[PSObject]```|false   |8      |false        |
+---
 #### **Run**
 
 If set, will run the extension.  If -Stream is passed, results will be directly returned.
@@ -175,7 +185,7 @@ Implies -DynamicParameter.
 
 |Type          |Requried|Postion|PipelineInput        |
 |--------------|--------|-------|---------------------|
-|```[String]```|false   |8      |true (ByPropertyName)|
+|```[String]```|false   |9      |true (ByPropertyName)|
 ---
 #### **DynamicParameterPositionOffset**
 
@@ -186,7 +196,7 @@ Implies -DynamicParameter.
 
 |Type         |Requried|Postion|PipelineInput        |
 |-------------|--------|-------|---------------------|
-|```[Int32]```|false   |9      |true (ByPropertyName)|
+|```[Int32]```|false   |10     |true (ByPropertyName)|
 ---
 #### **NoMandatoryDynamicParameter**
 
@@ -228,7 +238,7 @@ If set, will validate this input against [ValidateScript], [ValidatePattern], [V
 
 |Type            |Requried|Postion|PipelineInput        |
 |----------------|--------|-------|---------------------|
-|```[PSObject]```|false   |10     |true (ByPropertyName)|
+|```[PSObject]```|false   |11     |true (ByPropertyName)|
 ---
 #### **AllValid**
 
@@ -249,7 +259,7 @@ The name of the parameter set.  This is used by -CouldRun and -Run to enforce a 
 
 |Type          |Requried|Postion|PipelineInput        |
 |--------------|--------|-------|---------------------|
-|```[String]```|false   |11     |true (ByPropertyName)|
+|```[String]```|false   |12     |true (ByPropertyName)|
 ---
 #### **Parameter**
 
@@ -259,7 +269,7 @@ The parameters to the extension.  Only used when determining if the extension -C
 
 |Type               |Requried|Postion|PipelineInput        |
 |-------------------|--------|-------|---------------------|
-|```[IDictionary]```|false   |12     |true (ByPropertyName)|
+|```[IDictionary]```|false   |13     |true (ByPropertyName)|
 ---
 #### **SteppablePipeline**
 
@@ -291,7 +301,7 @@ If set, will get help about one or more parameters of an extension
 
 |Type            |Requried|Postion|PipelineInput|
 |----------------|--------|-------|-------------|
-|```[String[]]```|false   |13     |false        |
+|```[String[]]```|false   |14     |false        |
 ---
 #### **Example**
 
@@ -320,7 +330,7 @@ Extension
 ---
 ### Syntax
 ```PowerShell
-Get-Extension [[-ExtensionPath] <String>] [-Force] [[-CommandName] <String[]>] [[-ExtensionPattern] <String>] [[-ExtensionName] <String[]>] [-Like] [-Match] [[-ExtensionModule] <String>] [[-ExtensionModuleAlias] <String[]>] [[-ExtensionTypeName] <String>] [-DynamicParameter] [-CouldRun] [-Run] [-Stream] [[-DynamicParameterSetName] <String>] [[-DynamicParameterPositionOffset] <Int32>] [-NoMandatoryDynamicParameter] [-RequireExtensionAttribute] [-RequireCmdletAttribute] [[-ValidateInput] <PSObject>] [-AllValid] [[-ParameterSetName] <String>] [[-Parameter] <IDictionary>] [-SteppablePipeline] [-Help] [[-ParameterHelp] <String[]>] [-Example] [-FullHelp] [<CommonParameters>]
+Get-Extension [[-ExtensionPath] <String>] [-Force] [[-CommandName] <String[]>] [[-ExtensionPattern] <String>] [[-ExtensionName] <String[]>] [-Like] [-Match] [[-ExtensionModule] <String>] [[-ExtensionModuleAlias] <String[]>] [[-ExtensionTypeName] <String>] [-DynamicParameter] [-CouldRun] [[-CouldPipe] <PSObject>] [-Run] [-Stream] [[-DynamicParameterSetName] <String>] [[-DynamicParameterPositionOffset] <Int32>] [-NoMandatoryDynamicParameter] [-RequireExtensionAttribute] [-RequireCmdletAttribute] [[-ValidateInput] <PSObject>] [-AllValid] [[-ParameterSetName] <String>] [[-Parameter] <IDictionary>] [-SteppablePipeline] [-Help] [[-ParameterHelp] <String[]>] [-Example] [-FullHelp] [<CommonParameters>]
 ```
 ---
 

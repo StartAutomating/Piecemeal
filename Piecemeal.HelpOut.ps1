@@ -9,5 +9,5 @@ if ($piecemealLoaded) {
 }
 if ($piecemealLoaded) {
     Save-MarkdownHelp -Module $piecemealLoaded.Name -PassThru |
-        Add-Member NoteProperty CommitMessage "Updating docs" -Force -PassThru
+        Add-Member ScriptProperty CommitMessage {"Updating $($this.Name)" } -Force -PassThru
 }

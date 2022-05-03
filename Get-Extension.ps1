@@ -190,18 +190,22 @@
             )
             process {
                 if ($ExtensionName) {
+                    $ExtensionCommandAliases = @($ExtensionCommand.Attributes.AliasNames)
                     :CheckExtensionName do {
                         foreach ($exn in $ExtensionName) {
                             if ($like) {
                                 if (($extensionCommand -like $exn) -or 
-                                    ($extensionCommand.DisplayName -like $exn)) { break CheckExtensionName }
+                                    ($extensionCommand.DisplayName -like $exn) -or
+                                    ($ExtensionCommandAliases -like $exn)) { break CheckExtensionName }
                             }
                             elseif ($match) {
                                 if (($ExtensionCommand -match $exn) -or 
-                                    ($extensionCommand.DisplayName -match $exn)) { break CheckExtensionName }
+                                    ($extensionCommand.DisplayName -match $exn) -or
+                                    ($ExtensionCommandAliases -match $exn)) { break CheckExtensionName }
                             }
                             elseif (($ExtensionCommand -eq $exn) -or 
-                                ($ExtensionCommand.DisplayName -eq $exn)) { break CheckExtensionName }
+                                ($ExtensionCommand.DisplayName -eq $exn) -or
+                                ($ExtensionCommandAliases -eq $exn)) { break CheckExtensionName }
                         }
                         return
                     } while ($false)

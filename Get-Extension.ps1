@@ -193,12 +193,15 @@
                     :CheckExtensionName do {
                         foreach ($exn in $ExtensionName) {
                             if ($like) {
-                                if ($extensionCommand -like $exn) { break CheckExtensionName }
+                                if (($extensionCommand -like $exn) -or 
+                                    ($extensionCommand.DisplayName -like $exn)) { break CheckExtensionName }
                             }
                             elseif ($match) {
-                                if ($ExtensionCommand -match $exn) { break CheckExtensionName }
+                                if (($ExtensionCommand -match $exn) -or 
+                                    ($extensionCommand.DisplayName -match $exn)) { break CheckExtensionName }
                             }
-                            elseif ($ExtensionCommand -eq $exn) { break CheckExtensionName }
+                            elseif (($ExtensionCommand -eq $exn) -or 
+                                ($ExtensionCommand.DisplayName -eq $exn)) { break CheckExtensionName }
                         }
                         return
                     } while ($false)

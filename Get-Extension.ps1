@@ -77,13 +77,13 @@
     [switch]
     $DynamicParameter,
 
-    # If set, will return if the extension could run
+    # If set, will return if the extension could run.
     [Parameter(ValueFromPipelineByPropertyName)]
     [Alias('CanRun')]
     [switch]
     $CouldRun,
 
-    # If set, will return if the extension could accept this input from the pipeline    
+    # If set, will return if the extension could accept this input from the pipeline.
     [Alias('CanPipe')]
     [PSObject]
     $CouldPipe,
@@ -496,22 +496,14 @@
                     if ($ParameterSetName -and $paramSet.Name -ne $ParameterSetName) { continue }
                     $params = @{}
                     $mappedParams = [Ordered]@{} # Create a collection of mapped parameters
-                    $mandatories  =  # Walk thru each parameter of this command
-                        @(foreach ($myParam in $paramSet.Parameters) {
-                            if ($myParam.ValueFromPipeline) {
-                                if ($null -ne $inputObject -and 
-                                    $myParam.ParameterType -eq $inputObject.GetType()) {
-                                    $mappedParams[$myParam.Name] = $params[$myParam.Name] = $InputObject
-                                }
+                    # Walk thru each parameter of this command
+                    foreach ($myParam in $paramSet.Parameters) {
+                        if ($myParam.ValueFromPipeline) {
+                            if ($null -ne $inputObject -and 
+                                $myParam.ParameterType -eq $inputObject.GetType()) {
+                                $mappedParams[$myParam.Name] = $params[$myParam.Name] = $InputObject
                             }
-                            if ($myParam.IsMandatory) { # If the parameter was mandatory,
-                                $myParam.Name # keep track of it.
-                            }
-                        })
-                    foreach ($mandatoryParam in $mandatories) { # Walk thru each mandatory parameter.
-                        if (-not $params.Contains($mandatoryParam)) { # If it wasn't in the parameters.
-                            continue nextParameterSet
-                        }
+                        }                        
                     }
                     if ($mappedParams.Count -gt 0) {
                         return $mappedParams

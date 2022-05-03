@@ -77,13 +77,13 @@
     [switch]
     $DynamicParameter,
 
-    # If set, will return if the extension could run
+    # If set, will return if the extension could run.
     [Parameter(ValueFromPipelineByPropertyName)]
     [Alias('CanRun')]
     [switch]
     $CouldRun,
 
-    # If set, will return if the extension could accept this input from the pipeline    
+    # If set, will return if the extension could accept this input from the pipeline.
     [Alias('CanPipe')]
     [PSObject]
     $CouldPipe,
@@ -190,15 +190,22 @@
             )
             process {
                 if ($ExtensionName) {
+                    $ExtensionCommandAliases = @($ExtensionCommand.Attributes.AliasNames)
                     :CheckExtensionName do {
                         foreach ($exn in $ExtensionName) {
                             if ($like) {
-                                if ($extensionCommand -like $exn) { break CheckExtensionName }
+                                if (($extensionCommand -like $exn) -or 
+                                    ($extensionCommand.DisplayName -like $exn) -or
+                                    ($ExtensionCommandAliases -like $exn)) { break CheckExtensionName }
                             }
                             elseif ($match) {
-                                if ($ExtensionCommand -match $exn) { break CheckExtensionName }
+                                if (($ExtensionCommand -match $exn) -or 
+                                    ($extensionCommand.DisplayName -match $exn) -or
+                                    ($ExtensionCommandAliases -match $exn)) { break CheckExtensionName }
                             }
-                            elseif ($ExtensionCommand -eq $exn) { break CheckExtensionName }
+                            elseif (($ExtensionCommand -eq $exn) -or 
+                                ($ExtensionCommand.DisplayName -eq $exn) -or
+                                ($ExtensionCommandAliases -eq $exn)) { break CheckExtensionName }
                         }
                         return
                     } while ($false)
@@ -496,22 +503,14 @@
                     if ($ParameterSetName -and $paramSet.Name -ne $ParameterSetName) { continue }
                     $params = @{}
                     $mappedParams = [Ordered]@{} # Create a collection of mapped parameters
-                    $mandatories  =  # Walk thru each parameter of this command
-                        @(foreach ($myParam in $paramSet.Parameters) {
-                            if ($myParam.ValueFromPipeline) {
-                                if ($null -ne $inputObject -and 
-                                    $myParam.ParameterType -eq $inputObject.GetType()) {
-                                    $mappedParams[$myParam.Name] = $params[$myParam.Name] = $InputObject
-                                }
+                    # Walk thru each parameter of this command
+                    foreach ($myParam in $paramSet.Parameters) {
+                        if ($myParam.ValueFromPipeline) {
+                            if ($null -ne $inputObject -and 
+                                $myParam.ParameterType -eq $inputObject.GetType()) {
+                                $mappedParams[$myParam.Name] = $params[$myParam.Name] = $InputObject
                             }
-                            if ($myParam.IsMandatory) { # If the parameter was mandatory,
-                                $myParam.Name # keep track of it.
-                            }
-                        })
-                    foreach ($mandatoryParam in $mandatories) { # Walk thru each mandatory parameter.
-                        if (-not $params.Contains($mandatoryParam)) { # If it wasn't in the parameters.
-                            continue nextParameterSet
-                        }
+                        }                        
                     }
                     if ($mappedParams.Count -gt 0) {
                         return $mappedParams

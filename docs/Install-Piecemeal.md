@@ -39,6 +39,10 @@ The verbs to install.  By default, installs Get.
 
 
 
+Valid Values:
+
+* Get
+* New
 |Type            |Requried|Postion|PipelineInput        |
 |----------------|--------|-------|---------------------|
 |```[String[]]```|false   |2      |true (ByPropertyName)|

@@ -1,4 +1,11 @@
-﻿## 0.2.5
+﻿## 0.2.6
+* Get-Extension:
+  * Matching -ExtensionName support aliases (#63)
+  * Matching -ExtensionName against .DisplayName or .Name (#61)
+  * Get-Extension:  -CouldPipe no longer cares about manadatory parameters (#62)
+---
+
+## 0.2.5
 * Get-Extension:  Adding -CouldPipe (#58)
 * Get-Extension:  Fixing .Tags based inclusion (#57)
 ---

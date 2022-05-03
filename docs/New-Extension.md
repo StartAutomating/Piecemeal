@@ -93,6 +93,11 @@ The type of the extension command.  By default, this is a script.
 
 
 
+Valid Values:
+
+* Script
+* Function
+* Filter
 |Type          |Requried|Postion|PipelineInput        |
 |--------------|--------|-------|---------------------|
 |```[String]```|false   |7      |true (ByPropertyName)|

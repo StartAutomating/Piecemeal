@@ -136,7 +136,7 @@ If set, will return the dynamic parameters object of all the extensions for a gi
 ---
 #### **CouldRun**
 
-If set, will return if the extension could run
+If set, will return if the extension could run.
 
 
 
@@ -146,7 +146,7 @@ If set, will return if the extension could run
 ---
 #### **CouldPipe**
 
-If set, will return if the extension could accept this input from the pipeline
+If set, will return if the extension could accept this input from the pipeline.
 
 
 

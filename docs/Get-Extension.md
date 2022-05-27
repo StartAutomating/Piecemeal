@@ -271,18 +271,6 @@ The parameters to the extension.  Only used when determining if the extension -C
 |-------------------|--------|-------|---------------------|
 |```[IDictionary]```|false   |13     |true (ByPropertyName)|
 ---
-#### **SteppablePipeline**
-
-If set, will output a steppable pipeline for the extension.
-Steppable pipelines allow you to control how begin, process, and end are executed in an extension.
-This allows for the execution of more than one extension at a time.
-
-
-
-|Type          |Requried|Postion|PipelineInput|
-|--------------|--------|-------|-------------|
-|```[Switch]```|false   |named  |false        |
----
 #### **Help**
 
 If set, will output the help for the extensions
@@ -330,7 +318,7 @@ Extension
 ---
 ### Syntax
 ```PowerShell
-Get-Extension [[-ExtensionPath] <String>] [-Force] [[-CommandName] <String[]>] [[-ExtensionPattern] <String>] [[-ExtensionName] <String[]>] [-Like] [-Match] [[-ExtensionModule] <String>] [[-ExtensionModuleAlias] <String[]>] [[-ExtensionTypeName] <String>] [-DynamicParameter] [-CouldRun] [[-CouldPipe] <PSObject>] [-Run] [-Stream] [[-DynamicParameterSetName] <String>] [[-DynamicParameterPositionOffset] <Int32>] [-NoMandatoryDynamicParameter] [-RequireExtensionAttribute] [-RequireCmdletAttribute] [[-ValidateInput] <PSObject>] [-AllValid] [[-ParameterSetName] <String>] [[-Parameter] <IDictionary>] [-SteppablePipeline] [-Help] [[-ParameterHelp] <String[]>] [-Example] [-FullHelp] [<CommonParameters>]
+Get-Extension [[-ExtensionPath] <String>] [-Force] [[-CommandName] <String[]>] [[-ExtensionPattern] <String>] [[-ExtensionName] <String[]>] [-Like] [-Match] [[-ExtensionModule] <String>] [[-ExtensionModuleAlias] <String[]>] [[-ExtensionTypeName] <String>] [-DynamicParameter] [-CouldRun] [[-CouldPipe] <PSObject>] [-Run] [-Stream] [[-DynamicParameterSetName] <String>] [[-DynamicParameterPositionOffset] <Int32>] [-NoMandatoryDynamicParameter] [-RequireExtensionAttribute] [-RequireCmdletAttribute] [[-ValidateInput] <PSObject>] [-AllValid] [[-ParameterSetName] <String>] [[-Parameter] <IDictionary>] [-Help] [[-ParameterHelp] <String[]>] [-Example] [-FullHelp] [<CommonParameters>]
 ```
 ---
 

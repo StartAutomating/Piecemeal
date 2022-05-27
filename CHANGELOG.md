@@ -1,6 +1,5 @@
 ﻿## 0.2.7
 * Get-Extension
-  * Removing SteppablePipeline features (#66)
   * Allowing any command type (#65)
   * Fixing -CouldPipe (#67)
 ---

@@ -14,8 +14,7 @@
               LicenseURI   = 'https://github.com/StartAutomating/Piecemeal/blob/main/LICENSE'
               ReleaseNotes = @'
 ## 0.2.7
-* Get-Extension
-  * Removing SteppablePipeline features (#66)
+* Get-Extension  
   * Allowing any command type (#65)
   * Fixing -CouldPipe (#67)
 ---

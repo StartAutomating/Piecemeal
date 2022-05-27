@@ -1,5 +1,5 @@
 ﻿Push-Location $PSScriptRoot
-describe Piecemeal {    
+describe Piecemeal {
     beforeAll {
         {
             <#
@@ -7,7 +7,7 @@ describe Piecemeal {
                 Basic Extension
             .Description
                 This is about as basic of an extension as you can have
-            #>            
+            #>
         } | Set-Content .\01.ext.ps1
 
 
@@ -46,7 +46,7 @@ describe Piecemeal {
                 Cmdlet Extension
             .Description
                 This extension extends any cmdlet whose name starts with g
-            #>            
+            #>
             param(
             [Parameter(Mandatory)]
             [Management.Automation.Cmdlet('^g',"Extension")]
@@ -58,7 +58,7 @@ describe Piecemeal {
         {
             [ValidateSet('a','aa')]
             [ValidatePattern('a{1,}')]
-            [ValidateScript({if ($_ -like 'a*' -and $_ -notlike 'aa*') { return $true } else { return $false }})]            
+            [ValidateScript({if ($_ -like 'a*' -and $_ -notlike 'aa*') { return $true } else { return $false }})]
             param()
         } | Set-Content .\05.ext.ps1
 
@@ -80,7 +80,7 @@ describe Piecemeal {
             .SYNOPSIS
             .DESCRIPTION
             #>
-            param(            
+            param(
             [string]
             $Foo,
 
@@ -94,18 +94,18 @@ describe Piecemeal {
             }
             process {
                 $bar
-            }   
+            }
             end {
                 $foo
             }
         } | Set-Content .\07.ext.ps1
     }
     context 'Get-Extension' {
-        it '-ExtensionPath' {        
+        it '-ExtensionPath' {
             $extensionList = Get-Extension -ExtensionPath $pwd
             # Results without a rank will come alphabetically
             $extensionList[0] | Select-Object -ExpandProperty Synopsis | Should -BeLike "Basic Extension*"
-            $extensionList[1] | Select-Object -ExpandProperty Synopsis | Should -BeLike "Cmdlet Extension*" 
+            $extensionList[1] | Select-Object -ExpandProperty Synopsis | Should -BeLike "Cmdlet Extension*"
             # SimpleExtension has a rank, to test this aspect of Piecemeal.
             $extensionList[-1] | Select-Object -ExpandProperty Synopsis | Should -BeLike "Simple Extension*"
         }
@@ -118,23 +118,23 @@ describe Piecemeal {
 
         it '-DynamicParameter' {
             Get-Extension -ExtensionPath $pwd -CommandName Get-Extension -DynamicParameter |
-                Select-Object -ExpandProperty Keys -First 1 | 
+                Select-Object -ExpandProperty Keys -First 1 |
                 Should -Be "Int"
         }
 
         it '-NoMandatoryDynamicParameter' {
             Get-Extension -ExtensionPath $pwd -CommandName Get-Extension -DynamicParameter -NoMandatoryDynamicParameter |
-                Select-Object -ExpandProperty Values -First 1 | 
+                Select-Object -ExpandProperty Values -First 1 |
                 Select-Object -ExpandProperty Attributes |
                 Where-Object Position -GE 0 |
                 Select-Object -ExpandProperty Mandatory |
-                Should -Be $false 
+                Should -Be $false
         }
 
         it 'Can exclude parameters if they are not for the right command' {
             $x  = Get-Extension -ExtensionPath $pwd | Where-Object Name -like 04*
-            $x | Get-Extension -DynamicParameter -CommandName Get-Extension | 
-                Select-Object -ExpandProperty Keys | 
+            $x | Get-Extension -DynamicParameter -CommandName Get-Extension |
+                Select-Object -ExpandProperty Keys |
                 Select-Object -First 1 |
                 Should -Be "int"
             $x | Get-Extension -DynamicParameter -CommandName New-Extension | Select-Object -ExpandProperty Count | Should -Be 0
@@ -142,20 +142,20 @@ describe Piecemeal {
 
         it 'Can -ValidateInput' {
             $ev = $null
-            Get-Extension -ExtensionPath $pwd -ExtensionName 05* -Like -ValidateInput c -ErrorVariable ev -ErrorAction SilentlyContinue | 
+            Get-Extension -ExtensionPath $pwd -ExtensionName 05* -Like -ValidateInput c -ErrorVariable ev -ErrorAction SilentlyContinue |
                 Should -Be $null
-            
-            Get-Extension -ExtensionPath $pwd -ExtensionName 05* -Like -ValidateInput c -ErrorVariable ev -ErrorAction SilentlyContinue -AllValid | 
+
+            Get-Extension -ExtensionPath $pwd -ExtensionName 05* -Like -ValidateInput c -ErrorVariable ev -ErrorAction SilentlyContinue -AllValid |
                 Should -Be $null
             $ev | ForEach-Object { $_ | Should -BeLike "*'c'*'a'*" }
 
-            Get-Extension -ExtensionPath $pwd -ExtensionName 05* -Like -ValidateInput aa -ErrorVariable ev -ErrorAction SilentlyContinue -AllValid | 
+            Get-Extension -ExtensionPath $pwd -ExtensionName 05* -Like -ValidateInput aa -ErrorVariable ev -ErrorAction SilentlyContinue -AllValid |
                 Should -Be $null
             $ev | ForEach-Object { $_ | Should -BeLike "*'aa'*" }
-            Get-Extension -ExtensionPath $pwd -ExtensionName 05* -Like -ValidateInput a | 
-                Select-Object -ExpandProperty Name | 
+            Get-Extension -ExtensionPath $pwd -ExtensionName 05* -Like -ValidateInput a |
+                Select-Object -ExpandProperty Name |
                 Should -BeLike 05*
-            
+
         }
 
         it 'Can keep the parameter set when getting -DynamicParameter' {
@@ -173,7 +173,7 @@ describe Piecemeal {
 
         it 'Can use a -SteppablePipeline' {
             $sp  = Get-Extension -ExtensionPath $pwd -ExtensionName 07* -Like -SteppablePipeline -Parameter @{foo='foo'}
-            $sp.Begin($true) 
+            $sp.Begin($true)
             $sp.Process([PSCustomObject]@{Bar='bar'}) | Should -Be @('Foo','Bar')
             $sp.End() | Should -be 'Foo'
         }
@@ -185,35 +185,35 @@ describe Piecemeal {
                 "hello world$(if ($n) {$n})"
             } -CommandName Get-Foo -ExtensionParameter @{
                 "N"="[int]"
-            } | 
-                Invoke-Expression | 
+            } |
+                Invoke-Expression |
                 Should -be "hello world"
         }
     }
 
     context 'Install-Piecemeal' {
         it 'Installs extensions for a given module' {
-            Install-Piecemeal -ExtensionModule TestModule -ExtensionModuleAlias tm -ExtensionTypeName Test.Extension | 
+            Install-Piecemeal -ExtensionModule TestModule -ExtensionModuleAlias tm -ExtensionTypeName Test.Extension |
                 Invoke-Expression
 
             Get-Command Get-TestModuleExtension
         }
 
         it 'Can install with a custom -ExtensionNoun' {
-            Install-Piecemeal -ExtensionNoun MyExt -ExtensionModule MyModule | 
+            Install-Piecemeal -ExtensionNoun MyExt -ExtensionModule MyModule |
                 Invoke-Expression
 
             Get-Command Get-MyExt
         }
 
         it "Can install with -Verb 'New','Get'" {
-            Install-Piecemeal -ExtensionNoun MyExtTest -Verb New, Get -ExtensionModule MyModule | 
+            Install-Piecemeal -ExtensionNoun MyExtTest -Verb New, Get -ExtensionModule MyModule |
                 Invoke-Expression
 
             New-MyExtTest -ScriptBlock { "hello world"} | Invoke-Expression | Should -Be "Hello world"
         }
     }
-       
+
     afterAll {
         Get-ChildItem -Path $pwd -Filter *.ext.ps1 | Remove-Item
     }

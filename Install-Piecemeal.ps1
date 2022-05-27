@@ -38,7 +38,7 @@
     [Alias('ExtensionNameRegEx')]
     [string]
     $ExtensionPattern = '(?<!-)(extension|ext|ex|x)\.ps1$',
-    
+
     # The type name to add to an extension.  This can be used to format the extension.
     [Parameter(ValueFromPipelineByPropertyName)]
     [string]
@@ -198,7 +198,7 @@
                     "`$1-Extension"
                 }
 
-            $extensionVariableReplacer = 
+            $extensionVariableReplacer =
                 if ($ExtensionNoun) {
                     "`$script:${ExtensionNoun}s"
                 } elseif ($ExtensionModule) {
@@ -206,7 +206,7 @@
                 } else {
                     "`$script:Extensions"
                 }
-            
+
             $otherDashReplacment = "-$(
                 if ($ExtensionNoun) {
                     "$ExtensionNoun"
@@ -219,7 +219,7 @@
             $newCommand = $commandString.Insert($insertPoint, $insertion) -replace # Finally, we insert the default values
                 "($($exported.Verb))-($($exported.Noun))", $extensionCommandReplacement -replace # change the name
                 '\$script:Extensions', $extensionVariableReplacer -replace # change the inner variable references,
-                " Extensions ", " $ExtensionModule Extensions " -replace # and update likely documentation mentions 
+                " Extensions ", " $ExtensionModule Extensions " -replace # and update likely documentation mentions
                 "-Extension", $otherDashReplacment
 
             $null = $myOutput.AppendLine($newCommand)
@@ -231,7 +231,7 @@
                 $installInstructions =
                     @(
                     "Install-Module $($myModule.Name) -Scope CurrentUser"
-                    "$([Environment]::NewLine)# Import-Module $($myModule.Name) -Force" 
+                    "$([Environment]::NewLine)# Import-Module $($myModule.Name) -Force"
                     "$([Environment]::NewLine)# $($MyInvocation.MyCommand.Name)"
                     $(if ($myParams.Verb) {"-Verb $($verb -join ',')"})
                     @(foreach ($kv in $myParams.GetEnumerator()) {
@@ -242,7 +242,7 @@
                         } elseif ($kv.Value -is [string[]]) {
                             "-$($kv.Key) '$($kv.Value -join "','")'"
                         }
-                    }) | Sort-Object                    
+                    }) | Sort-Object
                     ) -join ' '
                 $logo = @(
                     $myModule.Name

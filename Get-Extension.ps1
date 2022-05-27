@@ -194,16 +194,16 @@
                     :CheckExtensionName do {
                         foreach ($exn in $ExtensionName) {
                             if ($like) {
-                                if (($extensionCommand -like $exn) -or 
+                                if (($extensionCommand -like $exn) -or
                                     ($extensionCommand.DisplayName -like $exn) -or
                                     ($ExtensionCommandAliases -like $exn)) { break CheckExtensionName }
                             }
                             elseif ($match) {
-                                if (($ExtensionCommand -match $exn) -or 
+                                if (($ExtensionCommand -match $exn) -or
                                     ($extensionCommand.DisplayName -match $exn) -or
                                     ($ExtensionCommandAliases -match $exn)) { break CheckExtensionName }
                             }
-                            elseif (($ExtensionCommand -eq $exn) -or 
+                            elseif (($ExtensionCommand -eq $exn) -or
                                 ($ExtensionCommand.DisplayName -eq $exn) -or
                                 ($ExtensionCommandAliases -eq $exn)) { break CheckExtensionName }
                         }
@@ -235,7 +235,7 @@
             $hasExtensionAttribute = $false
 
             $extCmd.PSObject.Methods.Add([psscriptmethod]::new('GetExtendedCommands', {
-                $allLoadedCmds = $ExecutionContext.SessionState.InvokeCommand.GetCommands('*','Alias,Function', $true)
+                $allLoadedCmds = $ExecutionContext.SessionState.InvokeCommand.GetCommands('*','All', $true)
                 $extends = @{}
                 foreach ($loadedCmd in $allLoadedCmds) {
                     foreach ($attr in $this.ScriptBlock.Attributes) {
@@ -328,7 +328,7 @@
                                     return $false
                                 } elseif ($AllValid) {
                                     throw "'$ValidateInput' is not a valid value."
-                                }                                
+                                }
                             }
                         } catch {
                             if ($AllValid) {
@@ -505,12 +505,23 @@
                     $mappedParams = [Ordered]@{} # Create a collection of mapped parameters
                     # Walk thru each parameter of this command
                     foreach ($myParam in $paramSet.Parameters) {
+                        # If the parameter is ValueFromPipeline
                         if ($myParam.ValueFromPipeline) {
-                            if ($null -ne $inputObject -and 
-                                $myParam.ParameterType -eq $inputObject.GetType()) {
+                            # and we have an input object
+                            if ($null -ne $inputObject -and
+                                (
+                                    # of the exact type
+                                    $myParam.ParameterType -eq $inputObject.GetType() -or
+                                    # (or a subclass of that type)
+                                    $inputObject.GetType().IsSubClassOf($myParam.ParameterType) -or
+                                    # (or an inteface of that type)
+                                    ($myParam.ParameterType.IsInterface -and $InputObject.GetType().GetInterface($myParam.ParameterType))
+                                )
+                            ) {
+                                # then map the parameter.
                                 $mappedParams[$myParam.Name] = $params[$myParam.Name] = $InputObject
                             }
-                        }                        
+                        }
                     }
                     if ($mappedParams.Count -gt 0) {
                         return $mappedParams

@@ -505,9 +505,20 @@
                     $mappedParams = [Ordered]@{} # Create a collection of mapped parameters
                     # Walk thru each parameter of this command
                     foreach ($myParam in $paramSet.Parameters) {
+                        # If the parameter is ValueFromPipeline
                         if ($myParam.ValueFromPipeline) {
+                            # and we have an input object
                             if ($null -ne $inputObject -and 
-                                $myParam.ParameterType -eq $inputObject.GetType()) {
+                                (
+                                    # of the exact type
+                                    $myParam.ParameterType -eq $inputObject.GetType() -or
+                                    # (or a subclass of that type)
+                                    $inputObject.GetType().IsSubClassOf($myParam.ParameterType) -or
+                                    # (or an inteface of that type)
+                                    ($myParam.ParameterType.IsInterface -and $InputObject.GetType().GetInterface($myParam.ParameterType))
+                                )
+                            ) {
+                                # then map the parameter.
                                 $mappedParams[$myParam.Name] = $params[$myParam.Name] = $InputObject
                             }
                         }                        

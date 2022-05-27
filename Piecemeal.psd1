@@ -1,5 +1,5 @@
 ﻿@{
-    ModuleVersion    = '0.2.6'
+    ModuleVersion    = '0.2.7'
     RootModule       = 'Piecemeal.psm1'
     Description      = 'Easy Extensible Plugins for PowerShell'
     GUID             = '91e2c328-d7dc-44a3-aeeb-ef3b19c36767'
@@ -13,6 +13,12 @@
               ProjectURI   = 'https://github.com/StartAutomating/Piecemeal'
               LicenseURI   = 'https://github.com/StartAutomating/Piecemeal/blob/main/LICENSE'
               ReleaseNotes = @'
+## 0.2.7
+* Get-Extension
+  * Removing SteppablePipeline features (#66)
+  * Allowing any command type (#65)
+  * Fixing -CouldPipe (#67)
+---
 ## 0.2.6
 * Get-Extension:
   * Matching -ExtensionName support aliases (#63)

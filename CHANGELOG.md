@@ -1,4 +1,11 @@
-﻿## 0.2.6
+﻿## 0.2.7
+* Get-Extension
+  * Removing SteppablePipeline features (#66)
+  * Allowing any command type (#65)
+  * Fixing -CouldPipe (#67)
+---
+
+## 0.2.6
 * Get-Extension:
   * Matching -ExtensionName support aliases (#63)
   * Matching -ExtensionName against .DisplayName or .Name (#61)

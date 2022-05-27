@@ -152,12 +152,6 @@
     [Alias('Parameters','ExtensionParameter','ExtensionParameters')]
     $Parameter = @{},
 
-    # If set, will output a steppable pipeline for the extension.
-    # Steppable pipelines allow you to control how begin, process, and end are executed in an extension.
-    # This allows for the execution of more than one extension at a time.
-    [switch]
-    $SteppablePipeline,
-
     # If set, will output the help for the extensions
     [switch]
     $Help,
@@ -632,32 +626,7 @@
                     }
 
                     return
-                }
-                elseif ($SteppablePipeline) {
-                    if (-not $extCmd) { return }
-                    if ($Parameter) {
-                        $couldRunExt = $extCmd.CouldRun($Parameter, $ParameterSetName)
-                        if (-not $couldRunExt) {
-                            $sb = {& $extCmd }
-                            $sb.GetSteppablePipeline() |
-                                Add-Member NoteProperty ExtensionCommand $extCmd -Force -PassThru |
-                                Add-Member NoteProperty ExtensionParameters $couldRunExt -Force -PassThru |
-                                Add-Member NoteProperty ExtensionScriptBlock $sb -Force -PassThru
-                        } else {
-                            $sb = {& $extCmd @couldRunExt}
-                            $sb.GetSteppablePipeline() |
-                                Add-Member NoteProperty ExtensionCommand $extCmd -Force -PassThru |
-                                Add-Member NoteProperty ExtensionParameters $couldRunExt -Force -PassThru |
-                                Add-Member NoteProperty ExtensionScriptBlock $sb -Force -PassThru
-                        }
-                    } else {
-                        $sb = {& $extCmd }
-                        $sb.GetSteppablePipeline() |
-                            Add-Member NoteProperty ExtensionCommand $extCmd -Force -PassThru |
-                            Add-Member NoteProperty ExtensionParameters @{} -Force -PassThru |
-                            Add-Member NoteProperty ExtensionScriptBlock $sb -Force -PassThru
-                    }
-                }
+                }                
                 elseif ($Run) {
                     if (-not $extCmd) { return }
                     $couldRunExt = $extCmd.CouldRun($Parameter, $ParameterSetName)

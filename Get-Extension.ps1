@@ -194,16 +194,16 @@
                     :CheckExtensionName do {
                         foreach ($exn in $ExtensionName) {
                             if ($like) {
-                                if (($extensionCommand -like $exn) -or 
+                                if (($extensionCommand -like $exn) -or
                                     ($extensionCommand.DisplayName -like $exn) -or
                                     ($ExtensionCommandAliases -like $exn)) { break CheckExtensionName }
                             }
                             elseif ($match) {
-                                if (($ExtensionCommand -match $exn) -or 
+                                if (($ExtensionCommand -match $exn) -or
                                     ($extensionCommand.DisplayName -match $exn) -or
                                     ($ExtensionCommandAliases -match $exn)) { break CheckExtensionName }
                             }
-                            elseif (($ExtensionCommand -eq $exn) -or 
+                            elseif (($ExtensionCommand -eq $exn) -or
                                 ($ExtensionCommand.DisplayName -eq $exn) -or
                                 ($ExtensionCommandAliases -eq $exn)) { break CheckExtensionName }
                         }
@@ -328,7 +328,7 @@
                                     return $false
                                 } elseif ($AllValid) {
                                     throw "'$ValidateInput' is not a valid value."
-                                }                                
+                                }
                             }
                         } catch {
                             if ($AllValid) {
@@ -508,7 +508,7 @@
                         # If the parameter is ValueFromPipeline
                         if ($myParam.ValueFromPipeline) {
                             # and we have an input object
-                            if ($null -ne $inputObject -and 
+                            if ($null -ne $inputObject -and
                                 (
                                     # of the exact type
                                     $myParam.ParameterType -eq $inputObject.GetType() -or
@@ -521,7 +521,7 @@
                                 # then map the parameter.
                                 $mappedParams[$myParam.Name] = $params[$myParam.Name] = $InputObject
                             }
-                        }                        
+                        }
                     }
                     if ($mappedParams.Count -gt 0) {
                         return $mappedParams

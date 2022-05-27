@@ -14,7 +14,7 @@
               LicenseURI   = 'https://github.com/StartAutomating/Piecemeal/blob/main/LICENSE'
               ReleaseNotes = @'
 ## 0.2.7
-* Get-Extension  
+* Get-Extension
   * Allowing any command type (#65)
   * Fixing -CouldPipe (#67)
 ---

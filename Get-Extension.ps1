@@ -235,7 +235,7 @@
             $hasExtensionAttribute = $false
 
             $extCmd.PSObject.Methods.Add([psscriptmethod]::new('GetExtendedCommands', {
-                $allLoadedCmds = $ExecutionContext.SessionState.InvokeCommand.GetCommands('*','Alias,Function', $true)
+                $allLoadedCmds = $ExecutionContext.SessionState.InvokeCommand.GetCommands('*','All', $true)
                 $extends = @{}
                 foreach ($loadedCmd in $allLoadedCmds) {
                     foreach ($attr in $this.ScriptBlock.Attributes) {

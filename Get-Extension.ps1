@@ -707,11 +707,13 @@
 
 
         $extensionFullRegex =
-            if ($ExtensionModule) {
-                "\.(?>$(@(@($ExtensionModule) + $ExtensionModuleAlias) -join '|'))\." + "(?>$($ExtensionPattern -join '|')"
-            } else {
-                "(?>$($ExtensionPattern -join '|')"
-            }
+            [Regex]::New($(
+                if ($ExtensionModule) {
+                    "\.(?>$(@(@($ExtensionModule) + $ExtensionModuleAlias) -join '|'))\." + "(?>$($ExtensionPattern -join '|'))"
+                } else {
+                    "(?>$($ExtensionPattern -join '|'))"
+                }
+            ), 'IgnorePatternWhitespace', '00:00:01')
 
         #region Find Extensions
         $loadedModules = @(Get-Module)
@@ -774,7 +776,7 @@
 
         if ($ExtensionPath) {
             Get-ChildItem -Recurse -Path $ExtensionPath |
-                Where-Object Name -Match $extensionFullRegex |
+                Where-Object { $_.Name -Match $extensionFullRegex } |
                 ConvertToExtension |
                 . WhereExtends $CommandName |
                 Sort-Object Rank, Name |

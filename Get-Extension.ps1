@@ -38,7 +38,7 @@
     [Parameter(ValueFromPipelineByPropertyName)]
     [ValidateNotNullOrEmpty()]
     [Alias('ExtensionNameRegEx')]
-    [string]
+    [string[]]
     $ExtensionPattern = '(?<!-)(extension|ext|ex|x)\.ps1$',
 
     # The name of an extension
@@ -708,15 +708,15 @@
 
         $extensionFullRegex =
             if ($ExtensionModule) {
-                "\.(?>$(@(@($ExtensionModule) + $ExtensionModuleAlias) -join '|'))\." + $ExtensionPattern
+                "\.(?>$(@(@($ExtensionModule) + $ExtensionModuleAlias) -join '|'))\." + "(?>$($ExtensionPattern -join '|')"
             } else {
-                $ExtensionPattern
+                "(?>$($ExtensionPattern -join '|')"
             }
 
         #region Find Extensions
         $loadedModules = @(Get-Module)
         $myInv = $MyInvocation
-        $myModuleName = if ($ExtensionModule) { $ExtensionModule } else {$MyInvocation.MyCommand.Module.Name }
+        $myModuleName = if ($ExtensionModule) { $ExtensionModule } else { $MyInvocation.MyCommand.Module.Name }
         if ($myInv.MyCommand.Module -and $loadedModules -notcontains $myInv.MyCommand.Module) {
             $loadedModules = @($myInv.MyCommand.Module) + $loadedModules
         }

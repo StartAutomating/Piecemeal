@@ -230,7 +230,17 @@
                 "-Extension", $otherDashReplacment
 
             $null = $myOutput.AppendLine($newCommand)
+
+            if ($ExtensionNoun) {
+                foreach ($paramName in $exported.Parameters.Keys) {
+                    if ($paramName -match 'Extension') {
+                        $RenameVariable[$paramName] = $paramName -replace 'Extension', $ExtensionNoun
+                    }
+                }
+            }
         }
+
+        
 
 
         $myOutput =

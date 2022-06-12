@@ -37,7 +37,7 @@
     # By default, '(extension|ext|ex|x)\.ps1$'
     [Parameter(ValueFromPipelineByPropertyName)]
     [ValidateNotNullOrEmpty()]
-    [Alias('ExtensionNameRegEx')]
+    [Alias('ExtensionNameRegEx', 'ExtensionPatterns')]
     [string[]]
     $ExtensionPattern = '(?<!-)(extension|ext|ex|x)\.ps1$',
 

@@ -762,7 +762,7 @@
                         $loadedModule |
                             Split-Path |
                             Get-ChildItem -Recurse |
-                            Where-Object Name -Match $extensionFullRegex |
+                            Where-Object { $_.Name -Match $extensionFullRegex } |
                             ConvertToExtension
                     }
                 }

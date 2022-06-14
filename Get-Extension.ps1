@@ -235,14 +235,25 @@
             $hasExtensionAttribute = $false
 
             $extCmd.PSObject.Methods.Add([psscriptmethod]::new('GetExtendedCommands', {
-                $allLoadedCmds = $ExecutionContext.SessionState.InvokeCommand.GetCommands('*','All', $true)
-                $extends = @{}
-                foreach ($loadedCmd in $allLoadedCmds) {
+
+                $extendedCommandNames = @(
                     foreach ($attr in $this.ScriptBlock.Attributes) {
                         if ($attr -isnot [Management.Automation.CmdletAttribute]) { continue }
                         $extensionCommandName = (
                             ($attr.VerbName -replace '\s') + '-' + ($attr.NounName -replace '\s')
                         ) -replace '^\-' -replace '\-$'
+                        
+                    }
+                )
+                if (-not $extendedCommandNames) {
+                    $this | Add-Member NoteProperty Extends @() -Force
+                    $this | Add-Member NoteProperty ExtensionCommands @() -Force
+                    return    
+                }
+                $allLoadedCmds = $ExecutionContext.SessionState.InvokeCommand.GetCommands('*','All', $true)
+                $extends = @{}
+                foreach ($loadedCmd in $allLoadedCmds) {
+                    foreach ($extensionCommandName in $extendedCommandNames) {
                         if ($extensionCommandName -and $loadedCmd.Name -match $extensionCommandName) {
                             $loadedCmd
                             $extends[$loadedCmd.Name] = $loadedCmd

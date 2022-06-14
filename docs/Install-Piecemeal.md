@@ -21,6 +21,11 @@ This enables extensibility within the module.
 Install-Piecemeal -ExtensionModule RoughDraft -ExtensionModuleAlias rd -ExtensionTypeName RoughDraft.Extension
 ```
 
+#### EXAMPLE 2
+```PowerShell
+1{0,1})$','\.ps(?<IsPowerShell>1{0,1})\.(?<Extension>[^.]+$)','\.ps(?<IsPowerShell>1{0,1})$' -OutputPath '.\Get-PipeScript.ps1' -RenameVariable @{ExtensionPath='PipeScriptPath'}
+```
+
 ---
 ### Parameters
 #### **ExtensionModule**
@@ -64,9 +69,9 @@ If provided, will override the default extension name regular expression
 
 
 
-|Type          |Requried|Postion|PipelineInput        |
-|--------------|--------|-------|---------------------|
-|```[String]```|false   |4      |true (ByPropertyName)|
+|Type            |Requried|Postion|PipelineInput        |
+|----------------|--------|-------|---------------------|
+|```[String[]]```|false   |4      |true (ByPropertyName)|
 ---
 #### **ExtensionTypeName**
 
@@ -121,6 +126,16 @@ Otherwise, contents will be returned.
 |--------------|--------|-------|---------------------|
 |```[String]```|false   |7      |true (ByPropertyName)|
 ---
+#### **RenameVariable**
+
+If provided, will rename variables.
+
+
+
+|Type               |Requried|Postion|PipelineInput        |
+|-------------------|--------|-------|---------------------|
+|```[IDictionary]```|false   |8      |true (ByPropertyName)|
+---
 ### Outputs
 System.String
 
@@ -128,7 +143,7 @@ System.String
 ---
 ### Syntax
 ```PowerShell
-Install-Piecemeal [[-ExtensionModule] <String>] [[-Verb] <String[]>] [[-ExtensionModuleAlias] <String[]>] [[-ExtensionPattern] <String>] [[-ExtensionTypeName] <String>] [[-ExtensionNoun] <String>] [-RequireExtensionAttribute] [-RequireCmdletAttribute] [[-OutputPath] <String>] [<CommonParameters>]
+Install-Piecemeal [[-ExtensionModule] <String>] [[-Verb] <String[]>] [[-ExtensionModuleAlias] <String[]>] [[-ExtensionPattern] <String[]>] [[-ExtensionTypeName] <String>] [[-ExtensionNoun] <String>] [-RequireExtensionAttribute] [-RequireCmdletAttribute] [[-OutputPath] <String>] [[-RenameVariable] <IDictionary>] [<CommonParameters>]
 ```
 ---
 ### Notes

@@ -11,6 +11,8 @@
         This returns a modified Get-Extension
     .Example
         Install-Piecemeal -ExtensionModule RoughDraft -ExtensionModuleAlias rd -ExtensionTypeName RoughDraft.Extension
+    .EXAMPLE
+        Install-Piecemeal -ExtensionNoun 'PipeScript' -ExtensionPattern '\.psx\.ps(?<IsPowerShell>1{0,1})$','\.ps(?<IsPowerShell>1{0,1})\.(?<Extension>[^.]+$)','\.ps(?<IsPowerShell>1{0,1})$' -OutputPath '.\Get-PipeScript.ps1' -RenameVariable @{ExtensionPath='PipeScriptPath'}
     .Link
         Get-Extension
     #>
@@ -35,8 +37,8 @@
     # If provided, will override the default extension name regular expression
     # (by default '(extension|ext|ex|x)\.ps1$' )
     [Parameter(ValueFromPipelineByPropertyName)]
-    [Alias('ExtensionNameRegEx')]
-    [string]
+    [Alias('ExtensionNameRegEx', 'ExtensionPatterns')]
+    [string[]]
     $ExtensionPattern = '(?<!-)(extension|ext|ex|x)\.ps1$',
 
     # The type name to add to an extension.  This can be used to format the extension.
@@ -65,7 +67,12 @@
     # Otherwise, contents will be returned.
     [Parameter(ValueFromPipelineByPropertyName)]
     [string]
-    $OutputPath
+    $OutputPath,
+    
+    # If provided, will rename variables.
+    [Parameter(ValueFromPipelineByPropertyName)]
+    [Collections.IDictionary]
+    $RenameVariable = @{}    
     )
 
     begin {
@@ -219,11 +226,21 @@
             $newCommand = $commandString.Insert($insertPoint, $insertion) -replace # Finally, we insert the default values
                 "($($exported.Verb))-($($exported.Noun))", $extensionCommandReplacement -replace # change the name
                 '\$script:Extensions', $extensionVariableReplacer -replace # change the inner variable references,
-                " Extensions ", " $ExtensionModule Extensions " -replace # and update likely documentation mentions
+                " Extensions ", " $(if ($ExtensionNoun) { $ExtensionNoun } else { $ExtensionModule + 'Extensions'}) " -replace # and update likely documentation mentions
                 "-Extension", $otherDashReplacment
 
             $null = $myOutput.AppendLine($newCommand)
+
+            if ($ExtensionNoun) {
+                foreach ($paramName in $exported.Parameters.Keys) {
+                    if ($paramName -match 'Extension') {
+                        $RenameVariable[$paramName] = $paramName -replace 'Extension', $ExtensionNoun
+                    }
+                }
+            }
         }
+
+        
 
 
         $myOutput =
@@ -241,6 +258,14 @@
                             "-$($kv.Key) '$($kv.Value)'"
                         } elseif ($kv.Value -is [string[]]) {
                             "-$($kv.Key) '$($kv.Value -join "','")'"
+                        } elseif ($kv.Value -is [Collections.IDictionary]) {
+                            "-$($kv.Key) @{$(                                
+                                @(
+                                    foreach ($ikv in $kv.Value.GetEnumerator()) { 
+                                        '' + $ikv.Key + '=' + "'" + "$($ikv.Value)".Replace("'","''") + "'"
+                                    }
+                                ) -join ';'
+                            )}"
                         }
                     }) | Sort-Object
                     ) -join ' '
@@ -259,10 +284,57 @@
                 "$myOutput"
             }
 
+        $newScriptBlock = [ScriptBlock]::Create($myOutput)
+        $newScriptBlockText = "$newScriptBlock"
+
+        if ($newScriptBlock -and $RenameVariable.Count) {
+            $TextReplacement = [Ordered]@{}
+            $variablesToRename = @($newScriptBlock.Ast.FindAll({
+                param($ast)
+                if ($ast -isnot [Management.Automation.Language.VariableExpressionast]) { return $false }                
+                if ($RenameVariable.Contains("$($ast.VariablePath)")) { return $true}
+                return $false
+            }, $true))
+            
+            $myOffset = 0            
+            foreach ($var in $variablesToRename) {
+                $renameToValue = $RenameVariable["$($var.VariablePath)"]
+                $start = $newScriptBlockText.IndexOf($var.Extent.Text, $myOffset)
+                $end   = $start + $var.Extent.Text.Length
+                $TextReplacement["$start,$end"] = 
+                    if ($var.Splatted) {
+                        '@' + ($renameToValue -replace '^[\$\@]')
+                    } else {
+                        '$' + ($renameToValue -replace '^[\$\@]')
+                    }
+                
+                $myOffset = $end
+            }
+
+
+            $newText = @(
+                $index = 0
+                foreach ($tr in $TextReplacement.GetEnumerator()) {
+                    $start, $end = $tr.Key -split ',' -as [int[]]
+                    if (-not $start -and -not $end ) { continue }
+                    if ($start -gt $index) {
+                        $newScriptBlockText.Substring($index, $start - $index)
+                    }
+                    $tr.Value
+                    $index = $end
+                }
+                if ($index -lt $newScriptBlockText.Length) {
+                    $newScriptBlockText.Substring($index)
+                }
+            )
+
+            $newScriptBlock = [scriptblock]::Create($newText -join '')
+        }
+
         if ($OutputPath) {
-            $myOutput | Set-Content -Path $OutputPath
+            "$newScriptBlock" | Set-Content -Path $OutputPath
         } else {
-            $myOutput
+            $newScriptBlock
         }
     }
 }

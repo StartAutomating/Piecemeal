@@ -11,8 +11,6 @@
             param()
             "Hello World"
         }
-    .Example
-        New-Extension -Command
     .Link
         Get-Extension
     .Notes
@@ -40,7 +38,7 @@
     [string]
     $ExtensionModule,
 
-    # A collection of Extension Parameters.   
+    # A collection of Extension Parameters.
     # The key is the name of the parameter.  The value is any parameter type or attributes.
     [Parameter(ValueFromPipelineByPropertyName)]
     [Collections.IDictionary]
@@ -58,12 +56,12 @@
     $ExtensionCommandType = 'Script',
 
     # The synopsis used for the extension.
-    [Parameter(ValueFromPipelineByPropertyName)]    
+    [Parameter(ValueFromPipelineByPropertyName)]
     [string]
     $ExtensionSynopsis = 'Script',
 
     # Any help links for the extension.
-    [Parameter(ValueFromPipelineByPropertyName)]    
+    [Parameter(ValueFromPipelineByPropertyName)]
     [string[]]
     $ExtensionLink,
 
@@ -93,15 +91,15 @@
         $couldRunExtensions  = Get-Extension -CouldRun -CommandName $myCmd -Parameter $myParams
         # If we could run any extensions, run them and assign their output.
         $ExtensionOutput     = if ($couldRunExtensions) { $couldRunExtensions | Get-Extension -Run }
-        
-        
+
+
         $combinedExtensionOutput = # Walk over each extension that ran.
-            foreach ($extOut in $ExtensionOutput) { 
-                # If the extension signaled it was done, output directly.                if ($extOut.Done) { $extOut.ExtensionOutput; continue } 
+            foreach ($extOut in $ExtensionOutput) {
+                # If the extension signaled it was done, output directly.                if ($extOut.Done) { $extOut.ExtensionOutput; continue }
                 # Otherwise, walk over each output from the extension.
                 foreach ($extOutItem in $extOut.ExtensionOutput) {
                     if ($extOutItem -is [ScriptBlock]) {  # If the output was a ScriptBlock, combine it's parts.
-                        $extOutAst = $extOut.ExtensionOutput.Ast                
+                        $extOutAst = $extOut.ExtensionOutput.Ast
                         $combinedParam   += $extOutItem.ParamBlock
                         $combinedBegin   += $extOutItem.BeginBlock.Statements
                         $combinedProcess += $extOutItem.ProcessBlock.Statements
@@ -120,7 +118,7 @@
                                 )
                             }
                             # If it the parameter and value were dictionaries
-                            elseif ($myCmd.Parameters[$extKey.Key].ParameterType.GetInterface([Collections.IDictionary]) -and 
+                            elseif ($myCmd.Parameters[$extKey.Key].ParameterType.GetInterface([Collections.IDictionary]) -and
                                 $extKey.Value -is [Collections.IDictionary]) {
                                 # update the dictionary (overwriting values where found)
                                 $dict = $ExecutionContext.SessionState.PSVariable.Get($extKey.Key).Value
@@ -131,24 +129,24 @@
                             else {
                                 # Otherwise, overwrite the parameter value.
                                 $ExecutionContext.SessionState.PSVariable.Set($extKey.Key, $extKey.Value)
-                            }                            
+                            }
                         }
                     }
-                }                
+                }
             }
 
 
         # If there was direct extension output, return it.
         if ($combinedExtensionOutput) { return $combinedExtensionOutput }
         #endregion Run Extensions
-            
+
         #region construct Script
         if ($ExtensionParameter.Count) {
             # If extension parameters were passed, construct a parameter block for each
             foreach ($ep in $ExtensionParameter.GetEnumerator()) {
                 $paramLines = @(
                     'param('
-                    
+
                     "    " + $ep.Value
                     "    `$$($ep.Key -replace '^\$')"
                     ')'
@@ -158,7 +156,7 @@
             }
         }
 
-        if ($ScriptBlock) {  # If a -ScriptBlock was passed 
+        if ($ScriptBlock) {  # If a -ScriptBlock was passed
             $ast = $ScriptBlock.Ast
             if ($ast.Body) {
                 $ast= $ast.Body
@@ -176,7 +174,7 @@
             if ($ExtensionCommandType -in 'Function', 'Filter') {
                 $ExtensionCommandType -in 'Function', 'Filter'
                 $ExtensionCommandType.ToLower() + " $ExtensionName" + '{'
-            }            
+            }
 
             # If the extension synopsis and description were provided, add help.
             if ($ExtensionSynopsis -and $extensionDescription) {
@@ -195,7 +193,7 @@
                     foreach ($extLink in $extensionLink) {
                         ".LINK"
                         $extLink
-                    }                    
+                    }
                 }
                 "#>"
             }
@@ -222,7 +220,7 @@
             "param("
             if ($combinedParam) {
                 @(foreach ($combined in $combinedParam) {
-                    # Include any existing parameters                                    
+                    # Include any existing parameters
                     foreach ($parameter in $combined.parameters) {
                         $parameterName = $parameter.Name.VariablePath.ToString()
                         @(
@@ -240,15 +238,15 @@
                             }
                             $parameter.Extent.ToString()
                         ) -join [Environment]::NewLine
-                    }                    
+                    }
                 }) -join (',' + ([Environment]::NewLine * 2))
             }
             ")"
 
-            
+
             if ($combinedBegin) {  # If there were begin blocks,
                 "begin {"          # create a begin block
-                @(foreach ($combined in $combinedBegin) { 
+                @(foreach ($combined in $combinedBegin) {
                     "$combined"    # combine the statements with two newlines.
                 }) -join ([Environment]::NewLine * 2)
                 "}"                # and close the block.
@@ -287,5 +285,5 @@
         $ExtensionScript = $extensionLines -join [Environment]::NewLine
         $ExtensionScript
         #endregion construct Script
-    }    
+    }
 }

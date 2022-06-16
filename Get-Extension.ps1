@@ -37,8 +37,8 @@
     # By default, '(extension|ext|ex|x)\.ps1$'
     [Parameter(ValueFromPipelineByPropertyName)]
     [ValidateNotNullOrEmpty()]
-    [Alias('ExtensionNameRegEx')]
-    [string]
+    [Alias('ExtensionNameRegEx', 'ExtensionPatterns')]
+    [string[]]
     $ExtensionPattern = '(?<!-)(extension|ext|ex|x)\.ps1$',
 
     # The name of an extension
@@ -226,23 +226,33 @@
                     $in
                 }
                 elseif ($in -is [IO.FileInfo]) {
-                    $ExecutionContext.SessionState.InvokeCommand.GetCommand($in.fullname, 'ExternalScript')
+                    $ExecutionContext.SessionState.InvokeCommand.GetCommand($in.fullname, 'ExternalScript,Application')
                 }
                 else {
-                    $ExecutionContext.SessionState.InvokeCommand.GetCommand($in, 'Function,ExternalScript')
+                    $ExecutionContext.SessionState.InvokeCommand.GetCommand($in, 'Function,ExternalScript,Application')
                 }
 
             $hasExtensionAttribute = $false
 
             $extCmd.PSObject.Methods.Add([psscriptmethod]::new('GetExtendedCommands', {
+
+                $extendedCommandNames = @(
+                    foreach ($attr in $this.ScriptBlock.Attributes) {
+                        if ($attr -isnot [Management.Automation.CmdletAttribute]) { continue }
+                        (
+                            ($attr.VerbName -replace '\s') + '-' + ($attr.NounName -replace '\s')
+                        ) -replace '^\-' -replace '\-$'                        
+                    }
+                )
+                if (-not $extendedCommandNames) {
+                    $this | Add-Member NoteProperty Extends @() -Force
+                    $this | Add-Member NoteProperty ExtensionCommands @() -Force
+                    return    
+                }
                 $allLoadedCmds = $ExecutionContext.SessionState.InvokeCommand.GetCommands('*','All', $true)
                 $extends = @{}
                 foreach ($loadedCmd in $allLoadedCmds) {
-                    foreach ($attr in $this.ScriptBlock.Attributes) {
-                        if ($attr -isnot [Management.Automation.CmdletAttribute]) { continue }
-                        $extensionCommandName = (
-                            ($attr.VerbName -replace '\s') + '-' + ($attr.NounName -replace '\s')
-                        ) -replace '^\-' -replace '\-$'
+                    foreach ($extensionCommandName in $extendedCommandNames) {
                         if ($extensionCommandName -and $loadedCmd.Name -match $extensionCommandName) {
                             $loadedCmd
                             $extends[$loadedCmd.Name] = $loadedCmd
@@ -707,16 +717,18 @@
 
 
         $extensionFullRegex =
-            if ($ExtensionModule) {
-                "\.(?>$(@(@($ExtensionModule) + $ExtensionModuleAlias) -join '|'))\." + $ExtensionPattern
-            } else {
-                $ExtensionPattern
-            }
+            [Regex]::New($(
+                if ($ExtensionModule) {
+                    "\.(?>$(@(@($ExtensionModule) + $ExtensionModuleAlias) -join '|'))\." + "(?>$($ExtensionPattern -join '|'))"
+                } else {
+                    "(?>$($ExtensionPattern -join '|'))"
+                }
+            ), 'IgnorePatternWhitespace', '00:00:01')
 
         #region Find Extensions
         $loadedModules = @(Get-Module)
         $myInv = $MyInvocation
-        $myModuleName = if ($ExtensionModule) { $ExtensionModule } else {$MyInvocation.MyCommand.Module.Name }
+        $myModuleName = if ($ExtensionModule) { $ExtensionModule } else { $MyInvocation.MyCommand.Module.Name }
         if ($myInv.MyCommand.Module -and $loadedModules -notcontains $myInv.MyCommand.Module) {
             $loadedModules = @($myInv.MyCommand.Module) + $loadedModules
         }
@@ -760,7 +772,7 @@
                         $loadedModule |
                             Split-Path |
                             Get-ChildItem -Recurse |
-                            Where-Object Name -Match $extensionFullRegex |
+                            Where-Object { $_.Name -Match $extensionFullRegex } |
                             ConvertToExtension
                     }
                 }
@@ -774,7 +786,7 @@
 
         if ($ExtensionPath) {
             Get-ChildItem -Recurse -Path $ExtensionPath |
-                Where-Object Name -Match $extensionFullRegex |
+                Where-Object { $_.Name -Match $extensionFullRegex } |
                 ConvertToExtension |
                 . WhereExtends $CommandName |
                 Sort-Object Rank, Name |

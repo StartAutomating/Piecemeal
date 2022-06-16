@@ -1,5 +1,5 @@
 ﻿@{
-    ModuleVersion    = '0.2.7'
+    ModuleVersion    = '0.2.8'
     RootModule       = 'Piecemeal.psm1'
     Description      = 'Easy Extensible Plugins for PowerShell'
     GUID             = '91e2c328-d7dc-44a3-aeeb-ef3b19c36767'
@@ -13,6 +13,16 @@
               ProjectURI   = 'https://github.com/StartAutomating/Piecemeal'
               LicenseURI   = 'https://github.com/StartAutomating/Piecemeal/blob/main/LICENSE'
               ReleaseNotes = @'
+## 0.2.8
+* Get-Extension:  
+  * Performance Improvements (#75)
+  * Regular Expressions now IgnorePatternWhitespace (#71)
+  * -ExtensionPattern allows for multiple patterns (#70)
+  * Allowing any command type (#65)
+* Install-Piecemeal:
+  * Adding -RenameVariable (#72)
+  * Automatically renaming parameters when -ExtensionNoun is provided (#60) 
+---
 ## 0.2.7
 * Get-Extension
   * Allowing any command type (#65)

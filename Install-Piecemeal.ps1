@@ -72,7 +72,7 @@
     # If provided, will rename variables.
     [Parameter(ValueFromPipelineByPropertyName)]
     [Collections.IDictionary]
-    $RenameVariable = @{}
+    $RenameVariable = @{}    
     )
 
     begin {
@@ -226,7 +226,7 @@
             $newCommand = $commandString.Insert($insertPoint, $insertion) -replace # Finally, we insert the default values
                 "($($exported.Verb))-($($exported.Noun))", $extensionCommandReplacement -replace # change the name
                 '\$script:Extensions', $extensionVariableReplacer -replace # change the inner variable references,
-                " Extensions ", " $ExtensionModule Extensions " -replace # and update likely documentation mentions
+                " Extensions ", " $(if ($ExtensionNoun) { $ExtensionNoun } else { $ExtensionModule + 'Extensions'}) " -replace # and update likely documentation mentions
                 "-Extension", $otherDashReplacment
 
             $null = $myOutput.AppendLine($newCommand)

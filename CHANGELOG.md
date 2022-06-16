@@ -1,4 +1,15 @@
-﻿## 0.2.7
+﻿## 0.2.8
+* Get-Extension:  
+  * Performance Improvements (#75)
+  * Regular Expressions now IgnorePatternWhitespace (#71)
+  * -ExtensionPattern allows for multiple patterns (#70)
+  * Allowing any command type (#65)
+* Install-Piecemeal:
+  * Adding -RenameVariable (#72)
+  * Automatically renaming parameters when -ExtensionNoun is provided (#60) 
+---
+
+## 0.2.7
 * Get-Extension
   * Allowing any command type (#65)
   * Fixing -CouldPipe (#67)

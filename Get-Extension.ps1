@@ -239,10 +239,9 @@
                 $extendedCommandNames = @(
                     foreach ($attr in $this.ScriptBlock.Attributes) {
                         if ($attr -isnot [Management.Automation.CmdletAttribute]) { continue }
-                        $extensionCommandName = (
+                        (
                             ($attr.VerbName -replace '\s') + '-' + ($attr.NounName -replace '\s')
-                        ) -replace '^\-' -replace '\-$'
-                        
+                        ) -replace '^\-' -replace '\-$'                        
                     }
                 )
                 if (-not $extendedCommandNames) {

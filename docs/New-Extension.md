@@ -23,11 +23,6 @@ New-Extension -ExtensionName MyExtension -CommandName New-Extension -ScriptBlock
 }
 ```
 
-#### EXAMPLE 2
-```PowerShell
-New-Extension -Command
-```
-
 ---
 ### Parameters
 #### **ExtensionName**
@@ -68,7 +63,7 @@ The extension module.  If provided, this will have to prefix the ExtensionNameRe
 ---
 #### **ExtensionParameter**
 
-A collection of Extension Parameters.   
+A collection of Extension Parameters.
 The key is the name of the parameter.  The value is any parameter type or attributes.
 
 

@@ -72,13 +72,52 @@
     # If provided, will rename variables.
     [Parameter(ValueFromPipelineByPropertyName)]
     [Collections.IDictionary]
-    $RenameVariable = @{}    
+    $RenameVariable = @{},
+    
+    # A custom Foreach-Object that will be appended to main pipelines within Get-Extension.
+    [ScriptBlock[]]
+    $ForeachObject,
+
+    # A custom Where-Object that will be injected to the main pipelines within Get-Extension
+    [ScriptBlock[]]
+    $WhereObject
     )
 
     begin {
         $myModule        = $MyInvocation.MyCommand.Module
         ${?<CurlyBrace>} = [Regex]::new('{(?<TrailingWhitespace>\s{0,})(?<Newline>[\r\n]{0,})?(?<Indent>\s{0,})?','Multiline')
         ${?<Indent>}     = [Regex]::new('^\s{0,}', 'Multiline,RightToLeft')
+
+        function FindRegion {
+            param(            
+            [Parameter()]
+            [string]
+            $RegionName = $(
+                '(?:.|\s)+?(?=\z|\s{0,}$)' # Matches anything until whitespace and the end of line.
+                # This prevents trailing whitespace from failing to pair the match, but allows whitespace within the region name
+            )
+            )
+                
+                
+            if ($PSBoundParameters['RegionName']) {
+                $RegionName = $RegionName -replace '\s', '\s'
+            }
+                
+            [Regex]::New("        
+            [\n\r\s]{0,}        # Preceeding whitespace
+            \#region            # The literal 'region'
+            \s{1,} 
+            (?<Name>$RegionName)
+                (?<Content>
+                    (?:.|\s)+?(?=
+                    \z|
+                    ^\s{0,}\#endregion\s\k<Name>
+                )
+            )
+            ^\s{0,}\#endregion\s\k<Name>
+            ", 'Multiline,IgnorePatternWhitespace,IgnoreCase')
+                            
+        }
     }
 
     process {
@@ -283,6 +322,45 @@
             } else {
                 "$myOutput"
             }
+
+        
+        if ($ForeachObject) {
+            $regionFinder = FindRegion -RegionName "Install-Piecemeal -ForeachObject"
+            $myOutput = $regionFinder.Replace($myOutput, {
+                '|' + [Environment]::NewLine +
+                    @(foreach ($foreachStatement in $ForeachObject) {
+                        if ($foreachStatement.Ast.ProcessBlock -or $foreachStatement.Ast.BeginBlock) {
+                            ". {$ForeachStatement}"
+                        } elseif ($foreachStatement.Ast.EndBlock.Statements -and 
+                            $foreachStatement.Ast.EndBlock.Statements[0].PipelineElements[0].CommandElements -and
+                            $foreachStatement.Ast.EndBlock.Statements[0].PipelineElements[0].CommandElements.Value -in 'Foreach-Object', '%') {
+                            "$ForeachStatement"
+                        } else {
+                            "Foreach-Object {$ForeachStatement}"
+                        }
+                    }) -join (' |' + [Environment]::NewLine)
+            })
+        }
+
+        if ($WhereObject) {
+            $regionFinder = FindRegion -RegionName "Install-Piecemeal -WhereObject"
+            $myOutput = $regionFinder.Replace($myOutput, {                
+                $(
+                    @(foreach ($whereStatement in $WhereObject) {
+                    if ($whereStatement.Ast.ProcessBlock -or $whereStatement.Ast.BeginBlock) {
+                        "& {$whereStatement}"
+                    } elseif ($whereStatement.Ast.EndBlock.Statements -and 
+                        $whereStatement.Ast.EndBlock.Statements[0].PipelineElements[0].CommandElements -and
+                        $whereStatement.Ast.EndBlock.Statements[0].PipelineElements[0].CommandElements.Value -in 'Where-Object', '?') {
+                        "$whereStatement"
+                    } else {
+                        "Where-Object {$whereStatement}"
+                    }
+                    }) -join (' |' + [Environment]::NewLine)
+                    ' |'
+                )
+            })
+        }
 
         $newScriptBlock = [ScriptBlock]::Create($myOutput)
         $newScriptBlockText = "$newScriptBlock"

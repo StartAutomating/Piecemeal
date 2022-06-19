@@ -597,7 +597,6 @@
                     }
                 }
 
-
                 if ($DynamicParameter -or $DynamicParameterSetName -or $DynamicParameterPositionOffset -or $NoMandatoryDynamicParameter) {
                     $extensionParams = $extCmd.GetDynamicParameters($DynamicParameterSetName, $DynamicParameterPositionOffset, $NoMandatoryDynamicParameter, $CommandName)
                     foreach ($kv in $extensionParams.GetEnumerator()) {
@@ -789,8 +788,14 @@
                 Where-Object { $_.Name -Match $extensionFullRegex } |
                 ConvertToExtension |
                 . WhereExtends $CommandName |
+                #region Install-Piecemeal -WhereObject
+                # This section can be updated by using Install-Piecemeal -WhereObject
+                #endregion Install-Piecemeal -WhereObject
                 Sort-Object Rank, Name |
                 OutputExtension
+                #region Install-Piecemeal -ForeachObject
+                # This section can be updated by using Install-Piecemeal -ForeachObject
+                #endregion Install-Piecemeal -ForeachObject
         } else {
             $script:Extensions |
                 . WhereExtends $CommandName |

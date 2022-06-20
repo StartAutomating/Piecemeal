@@ -6,8 +6,6 @@ Piecemeal is a little PowerShell module that helps solve a big problem:  allowin
 
 Piecemeal standardizes the creation of PowerShell extension scripts, and provides an embeddable engine for extensibility.
 
-### Embedding Piecemeal
-
 #### Installing Piecemeal
 
 You can embed Piecemeal by using Install-Piecemeal:

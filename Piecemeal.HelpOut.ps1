@@ -8,6 +8,5 @@ if ($piecemealLoaded) {
     "::error:: Piecemeal not loaded" |Out-Host
 }
 if ($piecemealLoaded) {
-    Save-MarkdownHelp -Module $piecemealLoaded.Name -PassThru |
-        Add-Member ScriptProperty CommitMessage {"Updating $($this.Name)" } -Force -PassThru
+    Save-MarkdownHelp -Module $piecemealLoaded.Name -PassThru
 }

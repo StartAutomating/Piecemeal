@@ -136,6 +136,26 @@ If provided, will rename variables.
 |-------------------|--------|-------|---------------------|
 |```[IDictionary]```|false   |8      |true (ByPropertyName)|
 ---
+#### **ForeachObject**
+
+A custom Foreach-Object that will be appended to main pipelines within Get-Extension.
+
+
+
+|Type                 |Requried|Postion|PipelineInput|
+|---------------------|--------|-------|-------------|
+|```[ScriptBlock[]]```|false   |9      |false        |
+---
+#### **WhereObject**
+
+A custom Where-Object that will be injected to the main pipelines within Get-Extension
+
+
+
+|Type                 |Requried|Postion|PipelineInput|
+|---------------------|--------|-------|-------------|
+|```[ScriptBlock[]]```|false   |10     |false        |
+---
 ### Outputs
 System.String
 
@@ -143,7 +163,7 @@ System.String
 ---
 ### Syntax
 ```PowerShell
-Install-Piecemeal [[-ExtensionModule] <String>] [[-Verb] <String[]>] [[-ExtensionModuleAlias] <String[]>] [[-ExtensionPattern] <String[]>] [[-ExtensionTypeName] <String>] [[-ExtensionNoun] <String>] [-RequireExtensionAttribute] [-RequireCmdletAttribute] [[-OutputPath] <String>] [[-RenameVariable] <IDictionary>] [<CommonParameters>]
+Install-Piecemeal [[-ExtensionModule] <String>] [[-Verb] <String[]>] [[-ExtensionModuleAlias] <String[]>] [[-ExtensionPattern] <String[]>] [[-ExtensionTypeName] <String>] [[-ExtensionNoun] <String>] [-RequireExtensionAttribute] [-RequireCmdletAttribute] [[-OutputPath] <String>] [[-RenameVariable] <IDictionary>] [[-ForeachObject] <ScriptBlock[]>] [[-WhereObject] <ScriptBlock[]>] [<CommonParameters>]
 ```
 ---
 ### Notes

@@ -1,5 +1,5 @@
 ﻿@{
-    ModuleVersion    = '0.2.8'
+    ModuleVersion    = '0.2.9'
     RootModule       = 'Piecemeal.psm1'
     Description      = 'Easy Extensible Plugins for PowerShell'
     GUID             = '91e2c328-d7dc-44a3-aeeb-ef3b19c36767'
@@ -13,6 +13,17 @@
               ProjectURI   = 'https://github.com/StartAutomating/Piecemeal'
               LicenseURI   = 'https://github.com/StartAutomating/Piecemeal/blob/main/LICENSE'
               ReleaseNotes = @'
+## 0.2.9:
+* Get-Extension:
+   * -CouldRun now honors validation attributes (#77)
+   * -CouldPipe now honors validation attributes (#78)
+   * -ExtensionName now supports Regex Literal Aliases ```[Alias(/Expression/)]``` (#80)
+   * -CouldRun, -CouldPipe, -Validate are no longer mutually exclusive (#79)
+* Install-Piecemeal
+   * Support for custom -WhereObject (#73)            
+   * Support for custom -ForeachObject (#74)
+---
+
 ## 0.2.8
 * Get-Extension:  
   * Performance Improvements (#75)

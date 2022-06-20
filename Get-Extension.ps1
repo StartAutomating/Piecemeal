@@ -58,7 +58,7 @@
     If provided, will treat -ExtensionName as a wildcard.
     This will return any extension whose name, displayname, or aliases are like the -ExtensionName.
 
-    If the extension has an Alias with a regular expression literal, then extension name will be valid if that regular expression matches.
+    If the extension has an Alias with a regular expression literal (```'/Expression/'```) then the -ExtensionName will be valid if that regular expression matches.
     #>
     [Parameter(ValueFromPipelineByPropertyName)]
     [switch]
@@ -69,7 +69,7 @@
     If provided, will treat -ExtensionName as a regular expression.
     This will return any extension whose name, displayname, or aliases match the -ExtensionName.
     
-    If the extension has an Alias with a regular expression literal, then extension name will be valid if that regular expression matches.
+    If the extension has an Alias with a regular expression literal (```'/Expression/'```) then the -ExtensionName will be valid if that regular expression matches.
     #>
     [Parameter(ValueFromPipelineByPropertyName)]
     [switch]
@@ -229,9 +229,9 @@
                             elseif (($ExtensionCommand -eq $exn) -or
                                 ($ExtensionCommand.DisplayName -eq $exn) -or
                                 ($ExtensionCommandAliases -eq $exn)) { break CheckExtensionName }
-                            else {
-                                foreach ($extesionAliasRegex in $ExtensionCommandAliases) {                            
-                                    $extensionAliasRegex = [Regex]::New($extesionAliasRegex -replace '^/' -replace '/$', 'IgnoreCase,IgnorePatternWhitespace')
+                            elseif ($ExtensionCommandAliasRegexes) {
+                                foreach ($extensionAliasRegex in $ExtensionCommandAliasRegexes) {                            
+                                    $extensionAliasRegex = [Regex]::New($extensionAliasRegex -replace '^/' -replace '/$', 'IgnoreCase,IgnorePatternWhitespace')
                                     if ($extensionAliasRegex -and $extensionAliasRegex.IsMatch($exn)) {
                                         break CheckExtensionName
                                     }

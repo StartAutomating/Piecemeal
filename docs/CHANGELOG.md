@@ -1,4 +1,8 @@
-﻿## 0.2.9:
+﻿## 0.2.9.1:
+* Fixing Get-Extension overcollection (#82)
+---
+
+## 0.2.9:
 * Get-Extension:
    * -CouldRun now honors validation attributes (#77)
    * -CouldPipe now honors validation attributes (#78)

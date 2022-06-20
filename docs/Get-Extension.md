@@ -82,7 +82,7 @@ If the extension has an Alias with a regular expression literal (```'/Expression
 If provided, will treat -ExtensionName as a wildcard.
 This will return any extension whose name, displayname, or aliases are like the -ExtensionName.
 
-If the extension has an Alias with a regular expression literal, then extension name will be valid if that regular expression matches.
+If the extension has an Alias with a regular expression literal (```'/Expression/'```) then the -ExtensionName will be valid if that regular expression matches.
 
 
 
@@ -95,7 +95,7 @@ If the extension has an Alias with a regular expression literal, then extension 
 If provided, will treat -ExtensionName as a regular expression.
 This will return any extension whose name, displayname, or aliases match the -ExtensionName.
 
-If the extension has an Alias with a regular expression literal, then extension name will be valid if that regular expression matches.
+If the extension has an Alias with a regular expression literal (```'/Expression/'```) then the -ExtensionName will be valid if that regular expression matches.
 
 
 

@@ -41,7 +41,13 @@
     [string[]]
     $ExtensionPattern = '(?<!-)(extension|ext|ex|x)\.ps1$',
 
-    # The name of an extension
+    <#
+    
+    The name of an extension.
+    By default, this will match any extension command whose name, displayname, or aliases exactly match the name.
+
+    If the extension has an Alias with a regular expression literal, then extension name will be valid if that regular expression matches.
+    #>
     [Parameter(ValueFromPipelineByPropertyName)]
     [ValidateNotNullOrEmpty()]
     [string[]]
@@ -188,9 +194,14 @@
             [PSObject]
             $ExtensionCommand
             )
+
             process {
                 if ($ExtensionName) {
                     $ExtensionCommandAliases = @($ExtensionCommand.Attributes.AliasNames)
+                    $ExtensionCommandAliasRegexes = @($ExtensionCommandAliases -match '^/' -match '/$')
+                    if ($ExtensionCommandAliasRegexes) {
+                        $ExtensionCommandAliases = @($ExtensionCommandAliases -notmatch '^/' -match '/$')
+                    }
                     :CheckExtensionName do {
                         foreach ($exn in $ExtensionName) {
                             if ($like) {
@@ -206,7 +217,17 @@
                             elseif (($ExtensionCommand -eq $exn) -or
                                 ($ExtensionCommand.DisplayName -eq $exn) -or
                                 ($ExtensionCommandAliases -eq $exn)) { break CheckExtensionName }
+                            else {
+                                foreach ($extesionAliasRegex in $ExtensionCommandAliases) {                            
+                                    $extensionAliasRegex = [Regex]::New($extesionAliasRegex -replace '^/' -replace '/$', 'IgnoreCase,IgnorePatternWhitespace')
+                                    if ($extensionAliasRegex -and $extensionAliasRegex.IsMatch($exn)) {
+                                        break CheckExtensionName
+                                    }
+                                }
+                            }
                         }
+                        
+
                         return
                     } while ($false)
                 }

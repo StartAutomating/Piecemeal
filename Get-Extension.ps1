@@ -52,8 +52,14 @@
     [ValidateNotNullOrEmpty()]
     [string[]]
     $ExtensionName,
+    
+    <#
 
-    # If provided, will treat -ExtensionName as a wildcard.
+    If provided, will treat -ExtensionName as a wildcard.
+    This will return any extension whose name, displayname, or aliases are like the -ExtensionName.
+
+    If the extension has an Alias with a regular expression literal, then extension name will be valid if that regular expression matches.
+    #>
     [Parameter(ValueFromPipelineByPropertyName)]
     [switch]
     $Like,

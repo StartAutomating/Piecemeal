@@ -46,7 +46,7 @@
     The name of an extension.
     By default, this will match any extension command whose name, displayname, or aliases exactly match the name.
 
-    If the extension has an Alias with a regular expression literal, then extension name will be valid if that regular expression matches.
+    If the extension has an Alias with a regular expression literal (```'/Expression/'```) then the -ExtensionName will be valid if that regular expression matches.
     #>
     [Parameter(ValueFromPipelineByPropertyName)]
     [ValidateNotNullOrEmpty()]
@@ -64,7 +64,13 @@
     [switch]
     $Like,
 
-    # If provided, will treat -ExtensionName as a regular expression.
+    <#
+    
+    If provided, will treat -ExtensionName as a regular expression.
+    This will return any extension whose name, displayname, or aliases match the -ExtensionName.
+    
+    If the extension has an Alias with a regular expression literal, then extension name will be valid if that regular expression matches.
+    #>
     [Parameter(ValueFromPipelineByPropertyName)]
     [switch]
     $Match,
@@ -533,6 +539,40 @@
 
             }))
 
+
+            $extCmd.PSObject.Methods.Add([PSScriptMethod]::new('IsParameterValid', {
+                param([Parameter(Mandatory)]$ParameterName, [PSObject]$Value)
+
+                if ($this.Parameters.Count -ge 0 -and 
+                    $this.Parameters[$parameterName].Attributes
+                ) {
+                    foreach ($attr in $this.Parameters[$parameterName].Attributes) {
+                        $_ = $value
+                        if ($attr -is [Management.Automation.ValidateScriptAttribute]) {
+                            $result = try { . $attr.ScriptBlock } catch { $null }
+                            if ($result -ne $true) {
+                                return $false
+                            }
+                        }
+                        elseif ($attr -is [Management.Automation.ValidatePatternAttribute] -and 
+                                (-not [Regex]::new($attr.RegexPattern, $attr.Options, '00:00:05').IsMatch($value))
+                            ) {
+                                return $false
+                            }
+                        elseif ($attr -is [Management.Automation.ValidateSetAttribute] -and 
+                                $attr.ValidValues -notcontains $value) {
+                                    return $false
+                                }
+                        elseif ($attr -is [Management.Automation.ValidateRangeAttribute] -and (
+                            ($value -gt $attr.MaxRange) -or ($value -lt $attr.MinRange)
+                        )) {
+                            return $false
+                        }
+                    }
+                }
+                return $true
+            }))
+
             $extCmd.PSObject.Methods.Add([PSScriptMethod]::new('CouldPipe', {
                 param([PSObject]$InputObject)
 
@@ -560,11 +600,17 @@
                             }
                         }
                     }
+                    # Check for parameter validity.
+                    foreach ($mappedParamName in @($mappedParams.Keys)) {
+                        if (-not $this.IsParameterValid($mappedParamName, $mappedParams[$mappedParamName])) {
+                            $mappedParams.Remove($mappedParamName)
+                        }
+                    }
                     if ($mappedParams.Count -gt 0) {
                         return $mappedParams
                     }
                 }
-            }))
+            }))            
 
             $extCmd.PSObject.Methods.Add([PSScriptMethod]::new('CouldRun', {
                 param([Collections.IDictionary]$params, [string]$ParameterSetName)
@@ -588,8 +634,16 @@
                                 $myParam.Name # keep track of it.
                             }
                         })
+
+                    # Check for parameter validity.
+                    foreach ($mappedParamName in @($mappedParams.Keys)) {
+                        if (-not $this.IsParameterValid($mappedParamName, $mappedParams[$mappedParamName])) {
+                            $mappedParams.Remove($mappedParamName)
+                        }
+                    }
+                    
                     foreach ($mandatoryParam in $mandatories) { # Walk thru each mandatory parameter.
-                        if (-not $params.Contains($mandatoryParam)) { # If it wasn't in the parameters.
+                        if (-not $mappedParams.Contains($mandatoryParam)) { # If it wasn't in the parameters.
                             continue nextParameterSet
                         }
                     }

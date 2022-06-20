@@ -1,4 +1,15 @@
-﻿## 0.2.8
+﻿## 0.2.9:
+* Get-Extension:
+   * -CouldRun now honors validation attributes (#77)
+   * -CouldPipe now honors validation attributes (#78)
+   * -ExtensionName now supports Regex Literal Aliases ```[Alias(/Expression/)]``` (#80)
+   * -CouldRun, -CouldPipe, -Validate are no longer mutually exclusive (#79)
+* Install-Piecemeal
+   * Support for custom -WhereObject (#73)            
+   * Support for custom -ForeachObject (#74)
+---
+
+## 0.2.8
 * Get-Extension:  
   * Performance Improvements (#75)
   * Regular Expressions now IgnorePatternWhitespace (#71)

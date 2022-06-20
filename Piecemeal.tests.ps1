@@ -189,6 +189,11 @@ describe Piecemeal {
             $ext.ExtensionCommand.DisplayName | Should -belike 08*
         }
 
+        it 'Will respect parameter validation attributes' {            
+            $ext = Get-Extension -ExtensionPath $pwd -ExtensionName 08* -Like -CouldRun -Parameter @{Verb='BadVerb'} -CouldPipe (Get-Process -id $pid)
+            $ext | Should -be $null
+        }
+
         it 'Can keep the parameter set when getting -DynamicParameter' {
             $dp  = Get-Extension -ExtensionPath $pwd -ExtensionName 06* -Like -DynamicParameter
             $dp.Values |

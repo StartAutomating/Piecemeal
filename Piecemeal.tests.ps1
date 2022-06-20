@@ -99,6 +99,32 @@ describe Piecemeal {
                 $foo
             }
         } | Set-Content .\07.ext.ps1
+
+        {
+            <#
+            .Synopsis
+                Noun-oriented pipeline aware process command
+            .Description
+                Takes a process by pipeline input and then runs a given command.
+            #>
+            [ValidateScript({                
+                return $true
+            })]
+            param(
+            [Parameter(Mandatory,ValueFromPipeline)]
+            [Diagnostics.Process]
+            $Process,
+            
+            [Parameter(Mandatory)]
+            [ValidateSet('Get','Stop')]
+            [string]
+            $Verb
+            )
+
+            process {
+                $Process | & $ExecutionContext.SessionState.InvokeCommand.GetCommand("$action-Process")
+            }
+        } | Set-Content .\08.ext.ps1
     }
     context 'Get-Extension' {
         it '-ExtensionPath' {
@@ -156,6 +182,11 @@ describe Piecemeal {
                 Select-Object -ExpandProperty Name |
                 Should -BeLike 05*
 
+        }
+
+        it 'Can -ValidateInput, -CouldRun, and -CouldPipe in one call' {
+            $ext = Get-Extension -ExtensionPath $pwd -ExtensionName 08* -Like -CouldRun -Parameter @{Verb='Get'} -CouldPipe (Get-Process -id $pid) -ValidateInput 1
+            $ext.ExtensionCommand.DisplayName | Should -belike 08*
         }
 
         it 'Can keep the parameter set when getting -DynamicParameter' {

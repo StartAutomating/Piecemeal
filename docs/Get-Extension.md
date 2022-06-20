@@ -66,7 +66,10 @@ By default, '(extension|ext|ex|x)\.ps1$'
 ---
 #### **ExtensionName**
 
-The name of an extension
+The name of an extension.
+By default, this will match any extension command whose name, displayname, or aliases exactly match the name.
+
+If the extension has an Alias with a regular expression literal, then extension name will be valid if that regular expression matches.
 
 
 
@@ -77,6 +80,9 @@ The name of an extension
 #### **Like**
 
 If provided, will treat -ExtensionName as a wildcard.
+This will return any extension whose name, displayname, or aliases are like the -ExtensionName.
+
+If the extension has an Alias with a regular expression literal, then extension name will be valid if that regular expression matches.
 
 
 

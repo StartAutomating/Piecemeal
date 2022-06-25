@@ -39,7 +39,7 @@
     [ValidateNotNullOrEmpty()]
     [Alias('ExtensionNameRegEx', 'ExtensionPatterns')]
     [string[]]
-    $ExtensionPattern = '(?<!-)(extension|ext|ex|x)\.ps1$',
+    $ExtensionPattern = '(?>extension|ext|ex|x)\.ps1$',
 
     <#
     
@@ -334,7 +334,7 @@
                         (?<Content>(.|\s)+?(?=(\.\w+|\#\>))) # Anything until the next .\field or end of the comment block
                         ', 'IgnoreCase,IgnorePatternWhitespace', [Timespan]::FromSeconds(1)).Match(
                             $this.ScriptBlock
-                    ).Groups["Content"].Value
+                    ).Groups["Content"].Value -replace '[\s\r\n]+$'
                 }
             ))
 
@@ -348,7 +348,7 @@
                     (?<Content>(.|\s)+?(?=(\.\w+|\#\>))) # Anything until the next .\field or end of the comment block
                     ', 'IgnoreCase,IgnorePatternWhitespace', [Timespan]::FromSeconds(1)).Match(
                         $this.ScriptBlock
-                ).Groups["Content"].Value
+                ).Groups["Content"].Value -replace '[\s\r\n]+$'
             }))
 
             $extCmd.PSObject.Methods.Add([psscriptmethod]::new('Validate', {
@@ -831,7 +831,7 @@
                 } else {
                     "(?>$($ExtensionPattern -join '|'))"
                 }
-            ), 'IgnorePatternWhitespace', '00:00:01')
+            ), 'IgnoreCase,IgnorePatternWhitespace', '00:00:01')
 
         #region Find Extensions
         $loadedModules = @(Get-Module)

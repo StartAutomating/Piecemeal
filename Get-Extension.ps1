@@ -334,7 +334,7 @@
                         (?<Content>(.|\s)+?(?=(\.\w+|\#\>))) # Anything until the next .\field or end of the comment block
                         ', 'IgnoreCase,IgnorePatternWhitespace', [Timespan]::FromSeconds(1)).Match(
                             $this.ScriptBlock
-                    ).Groups["Content"].Value
+                    ).Groups["Content"].Value -replace '[\s\r\n]+$'
                 }
             ))
 
@@ -348,7 +348,7 @@
                     (?<Content>(.|\s)+?(?=(\.\w+|\#\>))) # Anything until the next .\field or end of the comment block
                     ', 'IgnoreCase,IgnorePatternWhitespace', [Timespan]::FromSeconds(1)).Match(
                         $this.ScriptBlock
-                ).Groups["Content"].Value
+                ).Groups["Content"].Value -replace '[\s\r\n]+$'
             }))
 
             $extCmd.PSObject.Methods.Add([psscriptmethod]::new('Validate', {

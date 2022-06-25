@@ -1,4 +1,10 @@
-﻿## 0.2.9.1:
+﻿## 0.3.0:
+* Get-Extension:
+  * Ensuring Regexes IgnoreCase (#85)
+  * Trimming Trailing Whitepace from .Synopsis and .Description (#84)
+---
+
+## 0.2.9.1:
 * Fixing Get-Extension overcollection (#82)
 ---
 

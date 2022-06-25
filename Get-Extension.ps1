@@ -39,7 +39,7 @@
     [ValidateNotNullOrEmpty()]
     [Alias('ExtensionNameRegEx', 'ExtensionPatterns')]
     [string[]]
-    $ExtensionPattern = '(?<!-)(extension|ext|ex|x)\.ps1$',
+    $ExtensionPattern = '(?>extension|ext|ex|x)\.ps1$',
 
     <#
     
@@ -831,7 +831,7 @@
                 } else {
                     "(?>$($ExtensionPattern -join '|'))"
                 }
-            ), 'IgnorePatternWhitespace', '00:00:01')
+            ), 'IgnoreCase,IgnorePatternWhitespace', '00:00:01')
 
         #region Find Extensions
         $loadedModules = @(Get-Module)

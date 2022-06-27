@@ -265,8 +265,6 @@
                     $ExecutionContext.SessionState.InvokeCommand.GetCommand($in, 'Function,ExternalScript,Application')
                 }
 
-            $hasExtensionAttribute = $false
-
             $extCmd.PSObject.Methods.Add([psscriptmethod]::new('GetExtendedCommands', {
 
                 $extendedCommandNames = @(
@@ -303,8 +301,7 @@
 
             $null = $extCmd.GetExtendedCommands()
 
-            $inheritanceLevel = [ComponentModel.InheritanceLevel]::Inherited
-            if (-not $hasExtensionAttribute -and $RequireExtensionAttribute) { return }
+            $inheritanceLevel = [ComponentModel.InheritanceLevel]::Inherited            
 
             $extCmd.PSObject.Methods.Add([psscriptmethod]::New('GetHelpField', {
                 param([Parameter(Mandatory)]$Field)

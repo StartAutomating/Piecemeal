@@ -93,16 +93,6 @@ The noun used for any extension commands.
 |--------------|--------|-------|---------------------|
 |```[String]```|false   |6      |true (ByPropertyName)|
 ---
-#### **RequireExtensionAttribute**
-
-If set, will require a [Runtime.CompilerServices.Extension()] to be considered an extension.
-
-
-
-|Type          |Requried|Postion|PipelineInput        |
-|--------------|--------|-------|---------------------|
-|```[Switch]```|false   |named  |true (ByPropertyName)|
----
 #### **RequireCmdletAttribute**
 
 If set, will require a [Management.Automation.Cmdlet] attribute to be considered an extension.
@@ -163,7 +153,7 @@ System.String
 ---
 ### Syntax
 ```PowerShell
-Install-Piecemeal [[-ExtensionModule] <String>] [[-Verb] <String[]>] [[-ExtensionModuleAlias] <String[]>] [[-ExtensionPattern] <String[]>] [[-ExtensionTypeName] <String>] [[-ExtensionNoun] <String>] [-RequireExtensionAttribute] [-RequireCmdletAttribute] [[-OutputPath] <String>] [[-RenameVariable] <IDictionary>] [[-ForeachObject] <ScriptBlock[]>] [[-WhereObject] <ScriptBlock[]>] [<CommonParameters>]
+Install-Piecemeal [[-ExtensionModule] <String>] [[-Verb] <String[]>] [[-ExtensionModuleAlias] <String[]>] [[-ExtensionPattern] <String[]>] [[-ExtensionTypeName] <String>] [[-ExtensionNoun] <String>] [-RequireCmdletAttribute] [[-OutputPath] <String>] [[-RenameVariable] <IDictionary>] [[-ForeachObject] <ScriptBlock[]>] [[-WhereObject] <ScriptBlock[]>] [<CommonParameters>]
 ```
 ---
 ### Notes

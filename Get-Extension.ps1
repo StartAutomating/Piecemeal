@@ -351,6 +351,20 @@
                 ).Groups["Content"].Value -replace '[\s\r\n]+$'
             }))
 
+            $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
+                'Examples', {
+                # From ?<PowerShell_HelpField> in Irregular (https://github.com/StartAutomating/Irregular)
+                foreach ($match in [Regex]::new('
+                    \.(?<Field>Example)                  # Field Start
+                    \s{0,}                               # Optional Whitespace
+                    (?<Content>(.|\s)+?(?=(\.\w+|\#\>))) # Anything until the next .\field or end of the comment block
+                    ', 'IgnoreCase,IgnorePatternWhitespace', [Timespan]::FromSeconds(1)).Matches(
+                        $this.ScriptBlock
+                )) {
+                    $match.Groups["Content"].Value -replace '[\s\r\n]+$'
+                }
+            }))
+
             $extCmd.PSObject.Methods.Add([psscriptmethod]::new('Validate', {
                 param(
                     # input being validated

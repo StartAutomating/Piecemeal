@@ -1,4 +1,15 @@
-﻿## 0.3.0:
+﻿## 0.3.1:
+* Get-Extension:
+   * New Properties/Methods for Each Extension
+     * .Category (#89)
+     * .GetHelpField() (#91)
+     * .Examples (#87)
+     * .Links    (#88)
+     * .Metadata (#90)
+   * Removing -RequireExtensionAttribute (#92)
+---
+
+## 0.3.0:
 * Get-Extension:
   * Ensuring Regexes IgnoreCase (#85)
   * Trimming Trailing Whitepace from .Synopsis and .Description (#84)

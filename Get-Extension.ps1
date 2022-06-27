@@ -265,8 +265,6 @@
                     $ExecutionContext.SessionState.InvokeCommand.GetCommand($in, 'Function,ExternalScript,Application')
                 }
 
-            $hasExtensionAttribute = $false
-
             $extCmd.PSObject.Methods.Add([psscriptmethod]::new('GetExtendedCommands', {
 
                 $extendedCommandNames = @(
@@ -303,8 +301,20 @@
 
             $null = $extCmd.GetExtendedCommands()
 
-            $inheritanceLevel = [ComponentModel.InheritanceLevel]::Inherited
-            if (-not $hasExtensionAttribute -and $RequireExtensionAttribute) { return }
+            $inheritanceLevel = [ComponentModel.InheritanceLevel]::Inherited            
+
+            $extCmd.PSObject.Methods.Add([psscriptmethod]::New('GetHelpField', {
+                param([Parameter(Mandatory)]$Field)
+                foreach ($match in [Regex]::new("
+                        \.(?<Field>$Field)                   # Field Start
+                        \s{0,}                               # Optional Whitespace
+                        (?<Content>(.|\s)+?(?=(\.\w+|\#\>))) # Anything until the next .\field or end of the comment block
+                        ", 'IgnoreCase,IgnorePatternWhitespace', [Timespan]::FromSeconds(1)).Matches(
+                            $this.ScriptBlock
+                    )) {
+                    $match.Groups["Content"].Value -replace '[\s\r\n]+$' -replace '^[\s\r\n]+'
+                }
+            }))
 
             $extCmd.PSObject.Properties.Add([PSNoteProperty]::new('InheritanceLevel', $inheritanceLevel))
             $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
@@ -313,6 +323,23 @@
             $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
                 'Attributes', {$this.ScriptBlock.Attributes}
             ))
+
+
+            $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
+                'Category', {
+                    foreach ($attr in $this.ScriptBlock.Attributes) {
+                        if ($attr -is [Reflection.AssemblyMetaDataAttribute] -and
+                            $attr.Key -eq 'Category') {
+                            $attr.Value
+                        }
+                        elseif ($attr -is [ComponentModel.CategoryAttribute]) {
+                            $attr.Category
+                        }
+                    }
+                    
+                }
+            ))
+
             $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
                 'Rank', {
                     foreach ($attr in $this.ScriptBlock.Attributes) {
@@ -324,32 +351,35 @@
                     return 0
                 }
             ))
-            $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
-                'Description',
-                {
-                    # From ?<PowerShell_HelpField> in Irregular (https://github.com/StartAutomating/Irregular)
-                    [Regex]::new('
-                        \.(?<Field>Description)              # Field Start
-                        \s{0,}                               # Optional Whitespace
-                        (?<Content>(.|\s)+?(?=(\.\w+|\#\>))) # Anything until the next .\field or end of the comment block
-                        ', 'IgnoreCase,IgnorePatternWhitespace', [Timespan]::FromSeconds(1)).Match(
-                            $this.ScriptBlock
-                    ).Groups["Content"].Value -replace '[\s\r\n]+$'
+            
+            $extCmd.PSObject.Properties.Add([psscriptproperty]::new(
+                'Metadata', {
+                    $Metadata = [Ordered]@{}
+                    foreach ($attr in $this.ScriptBlock.Attributes) {
+                        if ($attr -is [Reflection.AssemblyMetaDataAttribute]) {
+                            if ($Metadata[$attr.Key]) {
+                                $Metadata[$attr.Key] = @($Metadata[$attr.Key]) + $attr.Value
+                            } else {
+                                $Metadata[$attr.Key] = $attr.Value
+                            }                            
+                        }
+                    }
+                    return $Metadata
                 }
             ))
 
+            $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
+                'Description', { @($this.GetHelpField("Description"))[0] }
+            ))
 
             $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
-                'Synopsis', {
-                # From ?<PowerShell_HelpField> in Irregular (https://github.com/StartAutomating/Irregular)
-                [Regex]::new('
-                    \.(?<Field>Synopsis)                 # Field Start
-                    \s{0,}                               # Optional Whitespace
-                    (?<Content>(.|\s)+?(?=(\.\w+|\#\>))) # Anything until the next .\field or end of the comment block
-                    ', 'IgnoreCase,IgnorePatternWhitespace', [Timespan]::FromSeconds(1)).Match(
-                        $this.ScriptBlock
-                ).Groups["Content"].Value -replace '[\s\r\n]+$'
-            }))
+                'Synopsis', { @($this.GetHelpField("Synopsis"))[0] }))
+
+            $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
+                'Examples', { $this.GetHelpField("Example") }))
+
+            $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
+                'Links', { $this.GetHelpField("Link") }))
 
             $extCmd.PSObject.Methods.Add([psscriptmethod]::new('Validate', {
                 param(

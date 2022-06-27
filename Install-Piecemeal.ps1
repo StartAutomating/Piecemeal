@@ -51,11 +51,6 @@
     [string]
     $ExtensionNoun,
 
-    # If set, will require a [Runtime.CompilerServices.Extension()] to be considered an extension.
-    [Parameter(ValueFromPipelineByPropertyName)]
-    [switch]
-    $RequireExtensionAttribute,
-
     # If set, will require a [Management.Automation.Cmdlet] attribute to be considered an extension.
     # This attribute can associate the extension with one or more commands.
     [Parameter(ValueFromPipelineByPropertyName)]

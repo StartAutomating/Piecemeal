@@ -16,7 +16,7 @@
     .Link
         Get-Extension
     #>
-    [OutputType([string])]
+    [OutputType([string], [IO.FileInfo])]
     param(
     # The name of the module that is being extended.
     [Parameter(ValueFromPipelineByPropertyName)]
@@ -406,6 +406,7 @@
 
         if ($OutputPath) {
             "$newScriptBlock" | Set-Content -Path $OutputPath
+            Get-Item -Path $OutputPath
         } else {
             $newScriptBlock
         }

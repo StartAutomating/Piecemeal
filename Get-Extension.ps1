@@ -337,6 +337,22 @@
                     return 0
                 }
             ))
+            
+            $extCmd.PSObject.Properties.Add([psscriptproperty]::new(
+                'Metadata', {
+                    $Metadata = [Ordered]@{}
+                    foreach ($attr in $this.ScriptBlock.Attributes) {
+                        if ($attr -is [Reflection.AssemblyMetaDataAttribute]) {
+                            if ($Metadata[$attr.Key]) {
+                                $Metadata[$attr.Key] = @($Metadata[$attr.Key]) + $attr.Value
+                            } else {
+                                $Metadata[$attr.Key] = $attr.Value
+                            }                            
+                        }
+                    }
+                    return $Metadata
+                }
+            ))
 
             $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
                 'Description', { @($this.GetHelpField("Description"))[0] }

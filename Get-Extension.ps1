@@ -326,6 +326,23 @@
             $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
                 'Attributes', {$this.ScriptBlock.Attributes}
             ))
+
+
+            $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
+                'Category', {
+                    foreach ($attr in $this.ScriptBlock.Attributes) {
+                        if ($attr -is [Reflection.AssemblyMetaDataAttribute] -and
+                            $attr.Key -eq 'Category') {
+                            $attr.Value
+                        }
+                        elseif ($attr -is [ComponentModel.CategoryAttribute]) {
+                            $attr.Category
+                        }
+                    }
+                    
+                }
+            ))
+
             $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
                 'Rank', {
                     foreach ($attr in $this.ScriptBlock.Attributes) {

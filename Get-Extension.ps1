@@ -348,6 +348,9 @@
             $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
                 'Examples', { $this.GetHelpField("Example") }))
 
+            $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
+                'Links', { $this.GetHelpField("Link") }))
+
             $extCmd.PSObject.Methods.Add([psscriptmethod]::new('Validate', {
                 param(
                     # input being validated

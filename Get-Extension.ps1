@@ -301,18 +301,31 @@
 
             $null = $extCmd.GetExtendedCommands()
 
-            $inheritanceLevel = [ComponentModel.InheritanceLevel]::Inherited            
+            $inheritanceLevel = [ComponentModel.InheritanceLevel]::Inherited
+
+            $extCmd.PSObject.Properties.Add([psscriptproperty]::New('BlockComments', {
+                [Regex]::New("                   
+                \<\# # The opening tag
+                (?<Block> 
+                    (?:.|\s)+?(?=\z|\#>) # anything until the closing tag
+                )
+                \#\> # the closing tag
+                ", 'IgnoreCase,IgnorePatternWhitespace', '00:00:01').Matches($this.ScriptBlock)
+            }))
 
             $extCmd.PSObject.Methods.Add([psscriptmethod]::New('GetHelpField', {
                 param([Parameter(Mandatory)]$Field)
-                foreach ($match in [Regex]::new("
+                foreach ($block in $this.BlockComments) {
+                    foreach ($match in [Regex]::new("
                         \.(?<Field>$Field)                   # Field Start
-                        \s{0,}                               # Optional Whitespace
+                        [\s-[\r\n]]{0,}                      # Optional Whitespace
+                        [\r\n]+                              # newline
                         (?<Content>(.|\s)+?(?=(\.\w+|\#\>))) # Anything until the next .\field or end of the comment block
                         ", 'IgnoreCase,IgnorePatternWhitespace', [Timespan]::FromSeconds(1)).Matches(
-                            $this.ScriptBlock
-                    )) {
-                    $match.Groups["Content"].Value -replace '[\s\r\n]+$' -replace '^[\s\r\n]+'
+                            $block.Value
+                        )) {
+                        $match.Groups["Content"].Value -replace '[\s\r\n]+$'
+                    }                    
                 }
             }))
 

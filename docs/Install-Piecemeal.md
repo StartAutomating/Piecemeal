@@ -150,6 +150,9 @@ A custom Where-Object that will be injected to the main pipelines within Get-Ext
 System.String
 
 
+System.IO.FileInfo
+
+
 ---
 ### Syntax
 ```PowerShell

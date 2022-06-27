@@ -306,6 +306,19 @@
             $inheritanceLevel = [ComponentModel.InheritanceLevel]::Inherited
             if (-not $hasExtensionAttribute -and $RequireExtensionAttribute) { return }
 
+            $extCmd.PSObject.Methods.Add([psscriptmethod]::New('GetHelpField', {
+                param([Parameter(Mandatory)]$Field)
+                foreach ($match in [Regex]::new("
+                        \.(?<Field>$Field)                   # Field Start
+                        \s{0,}                               # Optional Whitespace
+                        (?<Content>(.|\s)+?(?=(\.\w+|\#\>))) # Anything until the next .\field or end of the comment block
+                        ", 'IgnoreCase,IgnorePatternWhitespace', [Timespan]::FromSeconds(1)).Matches(
+                            $this.ScriptBlock
+                    )) {
+                    $match.Groups["Content"].Value -replace '[\s\r\n]+$' -replace '^[\s\r\n]+'
+                }
+            }))
+
             $extCmd.PSObject.Properties.Add([PSNoteProperty]::new('InheritanceLevel', $inheritanceLevel))
             $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
                 'DisplayName', [ScriptBlock]::Create("`$this.Name -replace '$extensionFullRegex'")
@@ -324,46 +337,16 @@
                     return 0
                 }
             ))
+
             $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
-                'Description',
-                {
-                    # From ?<PowerShell_HelpField> in Irregular (https://github.com/StartAutomating/Irregular)
-                    [Regex]::new('
-                        \.(?<Field>Description)              # Field Start
-                        \s{0,}                               # Optional Whitespace
-                        (?<Content>(.|\s)+?(?=(\.\w+|\#\>))) # Anything until the next .\field or end of the comment block
-                        ', 'IgnoreCase,IgnorePatternWhitespace', [Timespan]::FromSeconds(1)).Match(
-                            $this.ScriptBlock
-                    ).Groups["Content"].Value -replace '[\s\r\n]+$'
-                }
+                'Description', { @($this.GetHelpField("Description"))[0] }
             ))
 
+            $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
+                'Synopsis', { @($this.GetHelpField("Synopsis"))[0] }))
 
             $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
-                'Synopsis', {
-                # From ?<PowerShell_HelpField> in Irregular (https://github.com/StartAutomating/Irregular)
-                [Regex]::new('
-                    \.(?<Field>Synopsis)                 # Field Start
-                    \s{0,}                               # Optional Whitespace
-                    (?<Content>(.|\s)+?(?=(\.\w+|\#\>))) # Anything until the next .\field or end of the comment block
-                    ', 'IgnoreCase,IgnorePatternWhitespace', [Timespan]::FromSeconds(1)).Match(
-                        $this.ScriptBlock
-                ).Groups["Content"].Value -replace '[\s\r\n]+$'
-            }))
-
-            $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
-                'Examples', {
-                # From ?<PowerShell_HelpField> in Irregular (https://github.com/StartAutomating/Irregular)
-                foreach ($match in [Regex]::new('
-                    \.(?<Field>Example)                  # Field Start
-                    \s{0,}                               # Optional Whitespace
-                    (?<Content>(.|\s)+?(?=(\.\w+|\#\>))) # Anything until the next .\field or end of the comment block
-                    ', 'IgnoreCase,IgnorePatternWhitespace', [Timespan]::FromSeconds(1)).Matches(
-                        $this.ScriptBlock
-                )) {
-                    $match.Groups["Content"].Value -replace '[\s\r\n]+$'
-                }
-            }))
+                'Examples', { $this.GetHelpField("Example") }))
 
             $extCmd.PSObject.Methods.Add([psscriptmethod]::new('Validate', {
                 param(

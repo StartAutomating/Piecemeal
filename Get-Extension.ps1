@@ -382,11 +382,11 @@
             ))
 
             $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
-                'Description', { @($this.GetHelpField("Description"))[0] }
+                'Description', { @($this.GetHelpField("Description"))[0] -replace '^\s+' }
             ))
 
             $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
-                'Synopsis', { @($this.GetHelpField("Synopsis"))[0] }))
+                'Synopsis', { @($this.GetHelpField("Synopsis"))[0] -replace '^\s+' }))
 
             $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
                 'Examples', { $this.GetHelpField("Example") }))

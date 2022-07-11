@@ -1,4 +1,9 @@
-﻿## 0.3.2:
+﻿## 0.3.3:
+* Consolidating -Help parameters (#101)
+* Fixing .GetHelpField (#100)
+---
+
+## 0.3.2:
 * Piecemeal Available as a GitHub Action (#56)
 * Get-Extension:
   * Adding .BlockComments property (#96)

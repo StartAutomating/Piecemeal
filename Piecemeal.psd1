@@ -1,5 +1,5 @@
 ﻿@{
-    ModuleVersion    = '0.3.2'
+    ModuleVersion    = '0.3.3'
     RootModule       = 'Piecemeal.psm1'
     Description      = 'Easy Extensible Plugins for PowerShell'
     GUID             = '91e2c328-d7dc-44a3-aeeb-ef3b19c36767'
@@ -13,6 +13,11 @@
               ProjectURI   = 'https://github.com/StartAutomating/Piecemeal'
               LicenseURI   = 'https://github.com/StartAutomating/Piecemeal/blob/main/LICENSE'
               ReleaseNotes = @'
+## 0.3.3:
+* Consolidating -Help parameters (#101)
+* Fixing .GetHelpField (#100)
+---
+
 ## 0.3.2:
 * Piecemeal Available as a GitHub Action (#56)
 * Get-Extension:

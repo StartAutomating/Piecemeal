@@ -178,20 +178,7 @@
 
     # If set, will output the help for the extensions
     [switch]
-    $Help,
-
-    # If set, will get help about one or more parameters of an extension
-    [string[]]
-    $ParameterHelp,
-
-    # If set, will get help examples
-    [Alias('Examples')]
-    [switch]
-    $Example,
-
-    # If set, will output the full help for the extensions
-    [switch]
-    $FullHelp
+    $Help
     )
 
     begin {
@@ -842,18 +829,9 @@
                     }
                     return
                 }
-                elseif ($IsValid -and ($Help -or $FullHelp -or $Example -or $ParameterHelp)) {
-                    $getHelpSplat = @{}
-                    if ($FullHelp) {
-                        $getHelpSplat["Full"] = $true
-                    }
-                    if ($Example) {
-                        $getHelpSplat["Example"] = $true
-                    }
-                    if ($ParameterHelp) {
-                        $getHelpSplat["ParameterHelp"] = $ParameterHelp
-                    }
-
+                elseif ($IsValid -and $Help) {
+                    $getHelpSplat = @{Full=$true}
+                    
                     if ($extCmd -is [Management.Automation.ExternalScriptInfo]) {
                         Get-Help $extCmd.Source @getHelpSplat
                     } elseif ($extCmd -is [Management.Automation.FunctionInfo]) {

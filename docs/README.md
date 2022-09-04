@@ -1,4 +1,4 @@
-﻿Piecemeal enables Easy Extensible Plugins for PowerShell.
+Piecemeal enables Easy Extensible Plugins for PowerShell.
 
 ## What is Piecemeal?
 

@@ -93,6 +93,9 @@ Valid Values:
 * Script
 * Function
 * Filter
+
+
+
 |Type          |Requried|Postion|PipelineInput        |
 |--------------|--------|-------|---------------------|
 |```[String]```|false   |7      |true (ByPropertyName)|

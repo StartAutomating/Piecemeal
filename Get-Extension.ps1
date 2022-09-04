@@ -268,14 +268,15 @@
                     return    
                 }
                 if (-not $CommandList) {
-                    $commandList = $ExecutionContext.SessionState.InvokeCommand.GetCommands('*','All', $true)
-                }                
+                    $commandList = $ExecutionContext.SessionState.InvokeCommand.GetCommands('*','Function,Alias,Cmdlet', $true)
+                }
                 $extends = @{}
-                foreach ($loadedCmd in $allLoadedCmds) {
+                :nextCommand foreach ($loadedCmd in $commandList) {
                     foreach ($extensionCommandName in $extendedCommandNames) {
                         if ($extensionCommandName -and $loadedCmd.Name -match $extensionCommandName) {
                             $loadedCmd
                             $extends[$loadedCmd.Name] = $loadedCmd
+                            continue nextCommand
                         }
                     }
                 }
@@ -289,7 +290,7 @@
             }))
 
             if (-not $script:AllCommands) {
-                $script:AllCommands = $ExecutionContext.SessionState.InvokeCommand.GetCommands('*','All', $true)
+                $script:AllCommands = $ExecutionContext.SessionState.InvokeCommand.GetCommands('*','Function,Alias,Cmdlet', $true)
             }
             
 

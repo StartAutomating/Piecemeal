@@ -48,6 +48,9 @@ Valid Values:
 
 * Get
 * New
+
+
+
 |Type            |Requried|Postion|PipelineInput        |
 |----------------|--------|-------|---------------------|
 |```[String[]]```|false   |2      |true (ByPropertyName)|

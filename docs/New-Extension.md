@@ -12,6 +12,9 @@ Creates an Extension
 ---
 ### Related Links
 * [Get-Extension](Get-Extension.md)
+
+
+
 ---
 ### Examples
 #### EXAMPLE 1
@@ -19,7 +22,7 @@ Creates an Extension
 New-Extension -ExtensionName MyExtension -CommandName New-Extension -ScriptBlock {
     [ValidateScript({return $true})]
     param()
-    "Hello World"
+    &quot;Hello World&quot;
 }
 ```
 
@@ -31,15 +34,29 @@ The name of the extension
 
 
 
-|Type          |Requried|Postion|PipelineInput        |
-|--------------|--------|-------|---------------------|
-|```[String]```|false   |1      |true (ByPropertyName)|
+> **Type**: ```[String]```
+
+> **Required**: false
+
+> **Position**: 1
+
+> **PipelineInput**:true (ByPropertyName)
+
+
+
 ---
 #### **ScriptBlock**
 
-|Type               |Requried|Postion|PipelineInput        |
-|-------------------|--------|-------|---------------------|
-|```[ScriptBlock]```|false   |2      |true (ByPropertyName)|
+> **Type**: ```[ScriptBlock]```
+
+> **Required**: false
+
+> **Position**: 2
+
+> **PipelineInput**:true (ByPropertyName)
+
+
+
 ---
 #### **CommandName**
 
@@ -47,9 +64,16 @@ One or more commands being extended.
 
 
 
-|Type            |Requried|Postion|PipelineInput        |
-|----------------|--------|-------|---------------------|
-|```[String[]]```|false   |3      |true (ByPropertyName)|
+> **Type**: ```[String[]]```
+
+> **Required**: false
+
+> **Position**: 3
+
+> **PipelineInput**:true (ByPropertyName)
+
+
+
 ---
 #### **ExtensionModule**
 
@@ -57,9 +81,16 @@ The extension module.  If provided, this will have to prefix the ExtensionNameRe
 
 
 
-|Type          |Requried|Postion|PipelineInput        |
-|--------------|--------|-------|---------------------|
-|```[String]```|false   |4      |true (ByPropertyName)|
+> **Type**: ```[String]```
+
+> **Required**: false
+
+> **Position**: 4
+
+> **PipelineInput**:true (ByPropertyName)
+
+
+
 ---
 #### **ExtensionParameter**
 
@@ -68,9 +99,16 @@ The key is the name of the parameter.  The value is any parameter type or attrib
 
 
 
-|Type               |Requried|Postion|PipelineInput        |
-|-------------------|--------|-------|---------------------|
-|```[IDictionary]```|false   |5      |true (ByPropertyName)|
+> **Type**: ```[IDictionary]```
+
+> **Required**: false
+
+> **Position**: 5
+
+> **PipelineInput**:true (ByPropertyName)
+
+
+
 ---
 #### **ExtensionParameterHelp**
 
@@ -78,9 +116,16 @@ A collection of Extension Parameter Help.
 
 
 
-|Type               |Requried|Postion|PipelineInput        |
-|-------------------|--------|-------|---------------------|
-|```[IDictionary]```|false   |6      |true (ByPropertyName)|
+> **Type**: ```[IDictionary]```
+
+> **Required**: false
+
+> **Position**: 6
+
+> **PipelineInput**:true (ByPropertyName)
+
+
+
 ---
 #### **ExtensionCommandType**
 
@@ -96,9 +141,16 @@ Valid Values:
 
 
 
-|Type          |Requried|Postion|PipelineInput        |
-|--------------|--------|-------|---------------------|
-|```[String]```|false   |7      |true (ByPropertyName)|
+> **Type**: ```[String]```
+
+> **Required**: false
+
+> **Position**: 7
+
+> **PipelineInput**:true (ByPropertyName)
+
+
+
 ---
 #### **ExtensionSynopsis**
 
@@ -106,9 +158,16 @@ The synopsis used for the extension.
 
 
 
-|Type          |Requried|Postion|PipelineInput        |
-|--------------|--------|-------|---------------------|
-|```[String]```|false   |8      |true (ByPropertyName)|
+> **Type**: ```[String]```
+
+> **Required**: false
+
+> **Position**: 8
+
+> **PipelineInput**:true (ByPropertyName)
+
+
+
 ---
 #### **ExtensionLink**
 
@@ -116,19 +175,33 @@ Any help links for the extension.
 
 
 
-|Type            |Requried|Postion|PipelineInput        |
-|----------------|--------|-------|---------------------|
-|```[String[]]```|false   |9      |true (ByPropertyName)|
+> **Type**: ```[String[]]```
+
+> **Required**: false
+
+> **Position**: 9
+
+> **PipelineInput**:true (ByPropertyName)
+
+
+
 ---
 #### **ExtensionExample**
 
-|Type            |Requried|Postion|PipelineInput        |
-|----------------|--------|-------|---------------------|
-|```[String[]]```|false   |10     |true (ByPropertyName)|
+> **Type**: ```[String[]]```
+
+> **Required**: false
+
+> **Position**: 10
+
+> **PipelineInput**:true (ByPropertyName)
+
+
+
 ---
 ### Syntax
 ```PowerShell
-New-Extension [[-ExtensionName] <String>] [[-ScriptBlock] <ScriptBlock>] [[-CommandName] <String[]>] [[-ExtensionModule] <String>] [[-ExtensionParameter] <IDictionary>] [[-ExtensionParameterHelp] <IDictionary>] [[-ExtensionCommandType] <String>] [[-ExtensionSynopsis] <String>] [[-ExtensionLink] <String[]>] [[-ExtensionExample] <String[]>] [<CommonParameters>]
+New-Extension [[-ExtensionName] &lt;String&gt;] [[-ScriptBlock] &lt;ScriptBlock&gt;] [[-CommandName] &lt;String[]&gt;] [[-ExtensionModule] &lt;String&gt;] [[-ExtensionParameter] &lt;IDictionary&gt;] [[-ExtensionParameterHelp] &lt;IDictionary&gt;] [[-ExtensionCommandType] &lt;String&gt;] [[-ExtensionSynopsis] &lt;String&gt;] [[-ExtensionLink] &lt;String[]&gt;] [[-ExtensionExample] &lt;String[]&gt;] [&lt;CommonParameters&gt;]
 ```
 ---
 ### Notes

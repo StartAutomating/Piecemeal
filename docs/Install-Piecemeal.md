@@ -14,6 +14,9 @@ This enables extensibility within the module.
 ---
 ### Related Links
 * [Get-Extension](Get-Extension.md)
+
+
+
 ---
 ### Examples
 #### EXAMPLE 1
@@ -23,7 +26,7 @@ Install-Piecemeal -ExtensionModule RoughDraft -ExtensionModuleAlias rd -Extensio
 
 #### EXAMPLE 2
 ```PowerShell
-1{0,1})$','\.ps(?<IsPowerShell>1{0,1})\.(?<Extension>[^.]+$)','\.ps(?<IsPowerShell>1{0,1})$' -OutputPath '.\Get-PipeScript.ps1' -RenameVariable @{ExtensionPath='PipeScriptPath'}
+1{0,1})$&#39;,&#39;\.ps(?&lt;IsPowerShell&gt;1{0,1})\.(?&lt;Extension&gt;[^.]+$)&#39;,&#39;\.ps(?&lt;IsPowerShell&gt;1{0,1})$&#39; -OutputPath &#39;.\Get-PipeScript.ps1&#39; -RenameVariable @{ExtensionPath=&#39;PipeScriptPath&#39;}
 ```
 
 ---
@@ -34,9 +37,16 @@ The name of the module that is being extended.
 
 
 
-|Type          |Requried|Postion|PipelineInput        |
-|--------------|--------|-------|---------------------|
-|```[String]```|false   |1      |true (ByPropertyName)|
+> **Type**: ```[String]```
+
+> **Required**: false
+
+> **Position**: 1
+
+> **PipelineInput**:true (ByPropertyName)
+
+
+
 ---
 #### **Verb**
 
@@ -51,9 +61,16 @@ Valid Values:
 
 
 
-|Type            |Requried|Postion|PipelineInput        |
-|----------------|--------|-------|---------------------|
-|```[String[]]```|false   |2      |true (ByPropertyName)|
+> **Type**: ```[String[]]```
+
+> **Required**: false
+
+> **Position**: 2
+
+> **PipelineInput**:true (ByPropertyName)
+
+
+
 ---
 #### **ExtensionModuleAlias**
 
@@ -61,9 +78,16 @@ One or more aliases used to refer to the module being extended.
 
 
 
-|Type            |Requried|Postion|PipelineInput        |
-|----------------|--------|-------|---------------------|
-|```[String[]]```|false   |3      |true (ByPropertyName)|
+> **Type**: ```[String[]]```
+
+> **Required**: false
+
+> **Position**: 3
+
+> **PipelineInput**:true (ByPropertyName)
+
+
+
 ---
 #### **ExtensionPattern**
 
@@ -72,9 +96,16 @@ If provided, will override the default extension name regular expression
 
 
 
-|Type            |Requried|Postion|PipelineInput        |
-|----------------|--------|-------|---------------------|
-|```[String[]]```|false   |4      |true (ByPropertyName)|
+> **Type**: ```[String[]]```
+
+> **Required**: false
+
+> **Position**: 4
+
+> **PipelineInput**:true (ByPropertyName)
+
+
+
 ---
 #### **ExtensionTypeName**
 
@@ -82,9 +113,16 @@ The type name to add to an extension.  This can be used to format the extension.
 
 
 
-|Type          |Requried|Postion|PipelineInput        |
-|--------------|--------|-------|---------------------|
-|```[String]```|false   |5      |true (ByPropertyName)|
+> **Type**: ```[String]```
+
+> **Required**: false
+
+> **Position**: 5
+
+> **PipelineInput**:true (ByPropertyName)
+
+
+
 ---
 #### **ExtensionNoun**
 
@@ -92,9 +130,16 @@ The noun used for any extension commands.
 
 
 
-|Type          |Requried|Postion|PipelineInput        |
-|--------------|--------|-------|---------------------|
-|```[String]```|false   |6      |true (ByPropertyName)|
+> **Type**: ```[String]```
+
+> **Required**: false
+
+> **Position**: 6
+
+> **PipelineInput**:true (ByPropertyName)
+
+
+
 ---
 #### **RequireCmdletAttribute**
 
@@ -103,9 +148,16 @@ This attribute can associate the extension with one or more commands.
 
 
 
-|Type          |Requried|Postion|PipelineInput        |
-|--------------|--------|-------|---------------------|
-|```[Switch]```|false   |named  |true (ByPropertyName)|
+> **Type**: ```[Switch]```
+
+> **Required**: false
+
+> **Position**: named
+
+> **PipelineInput**:true (ByPropertyName)
+
+
+
 ---
 #### **OutputPath**
 
@@ -115,9 +167,16 @@ Otherwise, contents will be returned.
 
 
 
-|Type          |Requried|Postion|PipelineInput        |
-|--------------|--------|-------|---------------------|
-|```[String]```|false   |7      |true (ByPropertyName)|
+> **Type**: ```[String]```
+
+> **Required**: false
+
+> **Position**: 7
+
+> **PipelineInput**:true (ByPropertyName)
+
+
+
 ---
 #### **RenameVariable**
 
@@ -125,9 +184,16 @@ If provided, will rename variables.
 
 
 
-|Type               |Requried|Postion|PipelineInput        |
-|-------------------|--------|-------|---------------------|
-|```[IDictionary]```|false   |8      |true (ByPropertyName)|
+> **Type**: ```[IDictionary]```
+
+> **Required**: false
+
+> **Position**: 8
+
+> **PipelineInput**:true (ByPropertyName)
+
+
+
 ---
 #### **ForeachObject**
 
@@ -135,9 +201,16 @@ A custom Foreach-Object that will be appended to main pipelines within Get-Exten
 
 
 
-|Type                 |Requried|Postion|PipelineInput|
-|---------------------|--------|-------|-------------|
-|```[ScriptBlock[]]```|false   |9      |false        |
+> **Type**: ```[ScriptBlock[]]```
+
+> **Required**: false
+
+> **Position**: 9
+
+> **PipelineInput**:false
+
+
+
 ---
 #### **WhereObject**
 
@@ -145,9 +218,16 @@ A custom Where-Object that will be injected to the main pipelines within Get-Ext
 
 
 
-|Type                 |Requried|Postion|PipelineInput|
-|---------------------|--------|-------|-------------|
-|```[ScriptBlock[]]```|false   |10     |false        |
+> **Type**: ```[ScriptBlock[]]```
+
+> **Required**: false
+
+> **Position**: 10
+
+> **PipelineInput**:false
+
+
+
 ---
 ### Outputs
 System.String
@@ -159,7 +239,7 @@ System.IO.FileInfo
 ---
 ### Syntax
 ```PowerShell
-Install-Piecemeal [[-ExtensionModule] <String>] [[-Verb] <String[]>] [[-ExtensionModuleAlias] <String[]>] [[-ExtensionPattern] <String[]>] [[-ExtensionTypeName] <String>] [[-ExtensionNoun] <String>] [-RequireCmdletAttribute] [[-OutputPath] <String>] [[-RenameVariable] <IDictionary>] [[-ForeachObject] <ScriptBlock[]>] [[-WhereObject] <ScriptBlock[]>] [<CommonParameters>]
+Install-Piecemeal [[-ExtensionModule] &lt;String&gt;] [[-Verb] &lt;String[]&gt;] [[-ExtensionModuleAlias] &lt;String[]&gt;] [[-ExtensionPattern] &lt;String[]&gt;] [[-ExtensionTypeName] &lt;String&gt;] [[-ExtensionNoun] &lt;String&gt;] [-RequireCmdletAttribute] [[-OutputPath] &lt;String&gt;] [[-RenameVariable] &lt;IDictionary&gt;] [[-ForeachObject] &lt;ScriptBlock[]&gt;] [[-WhereObject] &lt;ScriptBlock[]&gt;] [&lt;CommonParameters&gt;]
 ```
 ---
 ### Notes

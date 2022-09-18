@@ -57,6 +57,11 @@ $($gitHubEvent | ConvertTo-Json -Depth 100)
 ::endgroup::
 "@ | Out-Host
 
+$branchName = git rev-parse --abrev-ref HEAD
+if (-not $branchName) { 
+    return
+}
+
 if ($env:GITHUB_ACTION_PATH) {
     $PiecemealModulePath = Join-Path $env:GITHUB_ACTION_PATH 'Piecemeal.psd1'
     if (Test-path $PiecemealModulePath) {

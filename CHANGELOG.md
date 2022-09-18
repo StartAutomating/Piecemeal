@@ -1,4 +1,8 @@
-﻿## 0.3.4:
+﻿## 0.3.5:
+* GitHub Action now checks if it is on a branch (Fixes #107)
+---
+
+## 0.3.4:
 * Get-Extension
   * Adding -Force (Fixes #103)
   * Caching allCommands (Fixes #104)

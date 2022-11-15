@@ -30,20 +30,6 @@ inputs:
 branding: 
   icon: terminal
   color: blue
-outputs: 
-  
-    PiecemealScriptRuntime: 
-      description: The time it took the .PiecemealScript parameter to run
-      value: ${{steps.PiecemealAction.outputs.PiecemealScriptRuntime}}
-    PiecemealPS1Runtime: 
-      description: The time it took all .Piecemeal.ps1 files to run
-      value: ${{steps.PiecemealAction.outputs.PiecemealPS1Runtime}}
-    PiecemealPS1Files: 
-      description: The .Piecemeal.ps1 files that were run (separated by semicolons)
-      value: ${{steps.PiecemealAction.outputs.PiecemealPS1Files}}
-    PiecemealPS1Count: 
-      description: The number of .Piecemeal.ps1 files that were run
-      value: ${{steps.PiecemealAction.outputs.PiecemealPS1Count}}
 runs: 
   using: composite
   steps: 
@@ -51,12 +37,12 @@ runs:
       id: PiecemealAction
       shell: pwsh
       env: 
-        PiecemealScript: ${{inputs.PiecemealScript}}
-        CommitMessage: ${{inputs.CommitMessage}}
-        UserEmail: ${{inputs.UserEmail}}
-        ModuleName: ${{inputs.ModuleName}}
-        SkipPiecemealPS1: ${{inputs.SkipPiecemealPS1}}
         UserName: ${{inputs.UserName}}
+        UserEmail: ${{inputs.UserEmail}}
+        PiecemealScript: ${{inputs.PiecemealScript}}
+        SkipPiecemealPS1: ${{inputs.SkipPiecemealPS1}}
+        ModuleName: ${{inputs.ModuleName}}
+        CommitMessage: ${{inputs.CommitMessage}}
       run: |
         $Parameters = @{}
         $Parameters.PiecemealScript = ${env:PiecemealScript}
@@ -214,9 +200,6 @@ runs:
         
         $PiecemealPS1EndStart = [DateTime]::Now
         $PiecemealPS1Took = [Datetime]::Now - $PiecemealPS1Start
-        "::set-output name=PiecemealPS1Count::$($PiecemealPS1List.Length)"   | Out-Host
-        "::set-output name=PiecemealPS1Files::$($PiecemealPS1List -join ';')"   | Out-Host
-        "::set-output name=PiecemealPS1Runtime::$($PiecemealPS1Took.TotalMilliseconds)"   | Out-Host
         if ($CommitMessage -or $anyFilesChanged) {
             if ($CommitMessage) {
                 dir $env:GITHUB_WORKSPACE -Recurse |

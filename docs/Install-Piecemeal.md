@@ -1,4 +1,3 @@
-
 Install-Piecemeal
 -----------------
 ### Synopsis
@@ -26,7 +25,7 @@ Install-Piecemeal -ExtensionModule RoughDraft -ExtensionModuleAlias rd -Extensio
 
 #### EXAMPLE 2
 ```PowerShell
-1{0,1})$&#39;,&#39;\.ps(?&lt;IsPowerShell&gt;1{0,1})\.(?&lt;Extension&gt;[^.]+$)&#39;,&#39;\.ps(?&lt;IsPowerShell&gt;1{0,1})$&#39; -OutputPath &#39;.\Get-PipeScript.ps1&#39; -RenameVariable @{ExtensionPath=&#39;PipeScriptPath&#39;}
+1{0,1})$','\.ps(?<IsPowerShell>1{0,1})\.(?<Extension>[^.]+$)','\.ps(?<IsPowerShell>1{0,1})$' -OutputPath '.\Get-PipeScript.ps1' -RenameVariable @{ExtensionPath='PipeScriptPath'}
 ```
 
 ---
@@ -230,20 +229,19 @@ A custom Where-Object that will be injected to the main pipelines within Get-Ext
 
 ---
 ### Outputs
-System.String
+* [String](https://learn.microsoft.com/en-us/dotnet/api/System.String)
 
 
-System.IO.FileInfo
+* [IO.FileInfo](https://learn.microsoft.com/en-us/dotnet/api/System.IO.FileInfo)
+
+
 
 
 ---
 ### Syntax
 ```PowerShell
-Install-Piecemeal [[-ExtensionModule] &lt;String&gt;] [[-Verb] &lt;String[]&gt;] [[-ExtensionModuleAlias] &lt;String[]&gt;] [[-ExtensionPattern] &lt;String[]&gt;] [[-ExtensionTypeName] &lt;String&gt;] [[-ExtensionNoun] &lt;String&gt;] [-RequireCmdletAttribute] [[-OutputPath] &lt;String&gt;] [[-RenameVariable] &lt;IDictionary&gt;] [[-ForeachObject] &lt;ScriptBlock[]&gt;] [[-WhereObject] &lt;ScriptBlock[]&gt;] [&lt;CommonParameters&gt;]
+Install-Piecemeal [[-ExtensionModule] <String>] [[-Verb] <String[]>] [[-ExtensionModuleAlias] <String[]>] [[-ExtensionPattern] <String[]>] [[-ExtensionTypeName] <String>] [[-ExtensionNoun] <String>] [-RequireCmdletAttribute] [[-OutputPath] <String>] [[-RenameVariable] <IDictionary>] [[-ForeachObject] <ScriptBlock[]>] [[-WhereObject] <ScriptBlock[]>] [<CommonParameters>]
 ```
 ---
 ### Notes
 This returns a modified Get-Extension
-
-
-

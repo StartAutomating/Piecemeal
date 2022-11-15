@@ -1,4 +1,3 @@
-
 Get-Extension
 -------------
 ### Synopsis
@@ -485,14 +484,14 @@ If set, will output the help for the extensions
 
 ---
 ### Outputs
-Extension
+* Extension
+
+
 
 
 ---
 ### Syntax
 ```PowerShell
-Get-Extension [[-ExtensionPath] &lt;String&gt;] [-Force] [[-CommandName] &lt;String[]&gt;] [[-ExtensionPattern] &lt;String[]&gt;] [[-ExtensionName] &lt;String[]&gt;] [-Like] [-Match] [[-ExtensionModule] &lt;String&gt;] [[-ExtensionModuleAlias] &lt;String[]&gt;] [[-ExtensionTypeName] &lt;String&gt;] [-DynamicParameter] [-CouldRun] [[-CouldPipe] &lt;PSObject&gt;] [-Run] [-Stream] [[-DynamicParameterSetName] &lt;String&gt;] [[-DynamicParameterPositionOffset] &lt;Int32&gt;] [-NoMandatoryDynamicParameter] [-RequireExtensionAttribute] [-RequireCmdletAttribute] [[-ValidateInput] &lt;PSObject&gt;] [-AllValid] [[-ParameterSetName] &lt;String&gt;] [[-Parameter] &lt;IDictionary&gt;] [-SteppablePipeline] [-Help] [&lt;CommonParameters&gt;]
+Get-Extension [[-ExtensionPath] <String>] [-Force] [[-CommandName] <String[]>] [[-ExtensionPattern] <String[]>] [[-ExtensionName] <String[]>] [-Like] [-Match] [[-ExtensionModule] <String>] [[-ExtensionModuleAlias] <String[]>] [[-ExtensionTypeName] <String>] [-DynamicParameter] [-CouldRun] [[-CouldPipe] <PSObject>] [-Run] [-Stream] [[-DynamicParameterSetName] <String>] [[-DynamicParameterPositionOffset] <Int32>] [-NoMandatoryDynamicParameter] [-RequireExtensionAttribute] [-RequireCmdletAttribute] [[-ValidateInput] <PSObject>] [-AllValid] [[-ParameterSetName] <String>] [[-Parameter] <IDictionary>] [-SteppablePipeline] [-Help] [<CommonParameters>]
 ```
 ---
-
-

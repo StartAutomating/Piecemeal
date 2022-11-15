@@ -116,7 +116,6 @@ if ($PiecemealScript) {
         Out-Host
 }
 $PiecemealScriptTook = [Datetime]::Now - $PiecemealScriptStart
-"::set-output name=PiecemealScriptRuntime::$($PiecemealScriptTook.TotalMilliseconds)"   | Out-Host
 
 $PiecemealPS1Start = [DateTime]::Now
 $PiecemealPS1List  = @()
@@ -140,9 +139,6 @@ if (-not $SkipPiecemealPS1) {
 
 $PiecemealPS1EndStart = [DateTime]::Now
 $PiecemealPS1Took = [Datetime]::Now - $PiecemealPS1Start
-"::set-output name=PiecemealPS1Count::$($PiecemealPS1List.Length)"   | Out-Host
-"::set-output name=PiecemealPS1Files::$($PiecemealPS1List -join ';')"   | Out-Host
-"::set-output name=PiecemealPS1Runtime::$($PiecemealPS1Took.TotalMilliseconds)"   | Out-Host
 if ($CommitMessage -or $anyFilesChanged) {
     if ($CommitMessage) {
         dir $env:GITHUB_WORKSPACE -Recurse |

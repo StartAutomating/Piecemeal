@@ -125,6 +125,27 @@ describe Piecemeal {
                 $Process | & $ExecutionContext.SessionState.InvokeCommand.GetCommand("$action-Process")
             }
         } | Set-Content .\08.ext.ps1
+
+        {
+            <#
+            .Synopsis
+                Testing binding with a custom typename
+            .Description
+                Testing binding with a custom PSTypename attribute
+            #>
+            [ValidateScript({                
+                return $true
+            })]
+            param(
+            [Parameter(Mandatory,ValueFromPipeline)]
+            [PSTypeName('My.Custom.TypeName')]
+            $MyCustomTypeName
+            )
+
+            process {
+                $MyCustomTypeName
+            }
+        } | Set-Content .\09.ext.ps1
     }
     context 'Get-Extension' {
         it '-ExtensionPath' {
@@ -187,6 +208,14 @@ describe Piecemeal {
         it 'Can -ValidateInput, -CouldRun, and -CouldPipe in one call' {
             $ext = Get-Extension -ExtensionPath $pwd -ExtensionName 08* -Like -CouldRun -Parameter @{Verb='Get'} -CouldPipe (Get-Process -id $pid) -ValidateInput 1
             $ext.ExtensionCommand.DisplayName | Should -belike 08*
+        }
+
+        it 'Can -CouldPipe when a parameter defines a PSTypeName' {
+            $ext = Get-Extension -ExtensionPath $pwd -ExtensionName 09* -Like -CouldPipe ([PSCustomObject]@{PSTypeName='My.Custom.Typename'})
+            $ext | Should -not -be $null
+
+            $ext = Get-Extension -ExtensionPath $pwd -ExtensionName 09* -Like -CouldPipe ([PSCustomObject]@{PSTypeName='Not.My.Custom.Typename'})
+            $ext | Should -be $null
         }
 
         it 'Will respect parameter validation attributes' {            

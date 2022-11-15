@@ -1,9 +1,15 @@
 ﻿#requires -Module PSDevOps
-Push-Location $PSScriptRoot
-New-GitHubWorkflow -Name "Analyze, Test, Tag, and Publish" -On Push, PullRequest, Demand -Job PowerShellStaticAnalysis, TestPowerShellOnLinux, TagReleaseAndPublish |
-    Set-Content .\.github\workflows\TestAndPublish.yml -Encoding UTF8 -PassThru
+#requires -Module GitPub
 
-New-GitHubWorkflow -Name "Run HelpOut" -On Push  -Job HelpOut |
-    Set-Content .\.github\workflows\UpdateDocs.yml -Encoding UTF8 -PassThru
+Push-Location $PSScriptRoot
+
+New-GitHubWorkflow -Name "Analyze, Test, Tag, and Publish" -On Push, PullRequest, Demand -Job PowerShellStaticAnalysis,
+    TestPowerShellOnLinux,
+    TagReleaseAndPublish,
+    RunHelpOut -OutputPath .\.github\workflows\TestAndPublish.yml
+
+Import-BuildStep -ModuleName GitPub
+
+New-GitHubWorkflow -On Issue, Demand -Job RunGitPub -Name "GitPub" -OutputPath .\.github\workflows\GitPub.yml
 
 Pop-Location

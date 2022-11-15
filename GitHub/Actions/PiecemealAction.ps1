@@ -116,7 +116,6 @@ if ($PiecemealScript) {
         Out-Host
 }
 $PiecemealScriptTook = [Datetime]::Now - $PiecemealScriptStart
-"::set-output name=PiecemealScriptRuntime::$($PiecemealScriptTook.TotalMilliseconds)"   | Out-Host
 
 $PiecemealPS1Start = [DateTime]::Now
 $PiecemealPS1List  = @()

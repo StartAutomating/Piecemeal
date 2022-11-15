@@ -3,7 +3,7 @@ name: Run HelpOut
 on: 
   push: 
 jobs: 
-  HelpOut: 
+  RunHelpOut: 
     runs-on: ubuntu-latest
     if: ${{ success() }}
     steps: 

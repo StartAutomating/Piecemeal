@@ -1,4 +1,3 @@
-
 New-Extension
 -------------
 ### Synopsis
@@ -22,7 +21,7 @@ Creates an Extension
 New-Extension -ExtensionName MyExtension -CommandName New-Extension -ScriptBlock {
     [ValidateScript({return $true})]
     param()
-    &quot;Hello World&quot;
+    "Hello World"
 }
 ```
 
@@ -201,11 +200,8 @@ Any help links for the extension.
 ---
 ### Syntax
 ```PowerShell
-New-Extension [[-ExtensionName] &lt;String&gt;] [[-ScriptBlock] &lt;ScriptBlock&gt;] [[-CommandName] &lt;String[]&gt;] [[-ExtensionModule] &lt;String&gt;] [[-ExtensionParameter] &lt;IDictionary&gt;] [[-ExtensionParameterHelp] &lt;IDictionary&gt;] [[-ExtensionCommandType] &lt;String&gt;] [[-ExtensionSynopsis] &lt;String&gt;] [[-ExtensionLink] &lt;String[]&gt;] [[-ExtensionExample] &lt;String[]&gt;] [&lt;CommonParameters&gt;]
+New-Extension [[-ExtensionName] <String>] [[-ScriptBlock] <ScriptBlock>] [[-CommandName] <String[]>] [[-ExtensionModule] <String>] [[-ExtensionParameter] <IDictionary>] [[-ExtensionParameterHelp] <IDictionary>] [[-ExtensionCommandType] <String>] [[-ExtensionSynopsis] <String>] [[-ExtensionLink] <String[]>] [[-ExtensionExample] <String[]>] [<CommonParameters>]
 ```
 ---
 ### Notes
 At this time, New-Extension assumes that it is not generating an indented script.
-
-
-

@@ -1,5 +1,5 @@
 ﻿@{
-    ModuleVersion    = '0.3.5'
+    ModuleVersion    = '0.3.6'
     RootModule       = 'Piecemeal.psm1'
     Description      = 'Easy Extensible Plugins for PowerShell'
     GUID             = '91e2c328-d7dc-44a3-aeeb-ef3b19c36767'
@@ -13,6 +13,14 @@
               ProjectURI   = 'https://github.com/StartAutomating/Piecemeal'
               LicenseURI   = 'https://github.com/StartAutomating/Piecemeal/blob/main/LICENSE'
               ReleaseNotes = @'
+## 0.3.6:
+
+* Get-Extension -CouldPipe can now handle PSTypeName attributes (Fixes #109)
+* Piecemeal action no longer produces output variables (Fixes #110)
+* Now Publishing with [GitPub](https://github.com/StartAutomating/GitPub) (Fixes #111)
+
+---
+
 ## 0.3.5:
 * GitHub Action now checks if it is on a branch (Fixes #107)
 ---

@@ -441,7 +441,7 @@
                         }
                     }
                     elseif ($attr -is [Management.Automation.ValidatePatternAttribute]) {
-                        $matched = [Regex]::new($attr.RegexPattern, $attr.Options, [Timespan]::FromSeconds(1)).Match($ValidateInput)
+                        $matched = [Regex]::new($attr.RegexPattern, $attr.Options, [Timespan]::FromSeconds(1)).Match("$ValidateInput")
                         if (-not $matched.Success) {
                             if ($allValid) {
                                 if ($ErrorActionPreference -eq 'ignore') {

@@ -1,4 +1,10 @@
-﻿## 0.3.6:
+﻿## 0.3.7:
+
+* Get-Extension:  Stringifying input for ValidatePattern (Fixes #114)
+
+---
+
+## 0.3.6:
 
 * Get-Extension -CouldPipe can now handle PSTypeName attributes (Fixes #109)
 * Piecemeal action no longer produces output variables (Fixes #110)
@@ -8,6 +14,7 @@
 
 ## 0.3.5:
 * GitHub Action now checks if it is on a branch (Fixes #107)
+
 ---
 
 ## 0.3.4:
@@ -15,11 +22,13 @@
   * Adding -Force (Fixes #103)
   * Caching allCommands (Fixes #104)
   * Only allowing Functions, Aliases, and Cmdlets to be extended (Fixes #105)
+
 ---
 
 ## 0.3.3:
 * Consolidating -Help parameters (#101)
 * Fixing .GetHelpField (#100)
+
 ---
 
 ## 0.3.2:
@@ -31,6 +40,7 @@
   * Trimming leading whitespace from .Synopsis and .Description (#99)
 * Install-Piecemeal:
   * Returns a file when -OutputPath is passed (#97)
+
 ---
 
 ## 0.3.1:
@@ -42,16 +52,19 @@
      * .Links    (#88)
      * .Metadata (#90)
    * Removing -RequireExtensionAttribute (#92)
+
 ---
 
 ## 0.3.0:
 * Get-Extension:
   * Ensuring Regexes IgnoreCase (#85)
   * Trimming Trailing Whitepace from .Synopsis and .Description (#84)
----
+
+---  
 
 ## 0.2.9.1:
 * Fixing Get-Extension overcollection (#82)
+
 ---
 
 ## 0.2.9:
@@ -63,6 +76,7 @@
 * Install-Piecemeal
    * Support for custom -WhereObject (#73)            
    * Support for custom -ForeachObject (#74)
+
 ---
 
 ## 0.2.8
@@ -74,12 +88,14 @@
 * Install-Piecemeal:
   * Adding -RenameVariable (#72)
   * Automatically renaming parameters when -ExtensionNoun is provided (#60) 
+
 ---
 
 ## 0.2.7
 * Get-Extension
   * Allowing any command type (#65)
   * Fixing -CouldPipe (#67)
+
 ---
 
 ## 0.2.6
@@ -87,21 +103,25 @@
   * Matching -ExtensionName support aliases (#63)
   * Matching -ExtensionName against .DisplayName or .Name (#61)
   * Get-Extension:  -CouldPipe no longer cares about manadatory parameters (#62)
+
 ---
 
 ## 0.2.5
 * Get-Extension:  Adding -CouldPipe (#58)
 * Get-Extension:  Fixing .Tags based inclusion (#57)
+
 ---
 
 ## 0.2.4
 * Install-Piecemeal:  Making -ExtensionModule Optional (#54)
+
 ---
 
 ## 0.2.3
 * Adding New-Extension (#51)
 * Generating Docs (#52)
 * Allowing New-Extension to be installed with Install-Piecemeal
+
 ---
 
 ## 0.2.2
@@ -109,6 +129,7 @@
 * Updating Piecemeal tests (checking validation order) (#48)
 * Get-Extension:  Fixing -ValidateInput logic (#48)
 * Get-Extension:  Fixing support for [ValidateScript] (#47)
+
 ---
 
 ## 0.2.1
@@ -117,6 +138,7 @@
 * Updating Piecemeal tests: Adding test for Steppable Pipeline (#42)
 * Updating Piecemeal Formatting (making .Extends a list) (re #44)
 * Get-Extension:  Support for SteppablePipelines (#42).  Fixing .Extends bug (#44)
+
 ---
 
 ## 0.2
@@ -125,29 +147,35 @@
 * Get-Extension:  Regex support for [Cmdlet] attribute (#39)
 * Get-Extension:  Adding -FullHelp, -ParameterHelp, -Example(s) (#38)
 * Get-Extension:  Adding -Help (#38)
+
 ---
 
 ## 0.1.10
 * Get-Extension:  Adding -ParameterSetName (#36)
-* Install-Piecmeal:  Adding -Force to Import-Module in Install Note (#32)
+* Install-Extension:  Adding -Force to Import-Module in Install Note (#32)
+
 ---
 
 ## 0.1.9
 * Get-Extension: Fixing CouldRun/Run issue with multiple ParameterSets (with other attributes present) (#31)
+
 ---
 
 ## 0.1.8
 * Get-Extension: Fixing CouldRun/Run issue with multiple ParameterSets (#31)
 * Install-Piecemeal: Improving Install Message (#32)
+
 ---
 
 ## 0.1.7
 * Get-Extension: Now inherits ParameterSetName (#28)
 * Get-Extension: Fixing issue properly displaying Valid Set (#29)
+
 ---
 
 ## 0.1.6
 * Get-Extension now supports all validation attributes (#26/#25)
+
 ---
 
 ## 0.1.5
@@ -155,10 +183,13 @@
 * Get-Extension supports -ExtensionName (#20)
 * Get-Extension/Install-Piecemeal renaming parameter -ExtensionNameRegex to -ExtensionPattern (#21)
 * Get-Extension:  Adding -ValidateInput / Support for [ValidateScript], [ValidateSet], [ValidatePattern] (#22)
+
 ---
+
 ## 0.1.4
 * Get-Extension:
   * Can now filter extension parameters based off of command (#17)
+
 ---
 
 ## 0.1.3
@@ -171,18 +202,25 @@
   * Allowing customization of -ExtensionName (#10)
   * Making $script variables unique (#9)
   * Fixing issues on Core (#16)
+
 ---
+
 ## 0.1.2
 * Get-Extension:
   * Added -NoMandatoryDynamicParameter (#6 / #4)
   * [Parameter] attributes are now copied, so underlying commands are unchanged (#7)
+
 ---
+
 ## 0.1.1
 * Get-Extension:
   * -Parameter not accepts ValueFromPipelineByPropertyName (#2)
   * -CommandName now works (#3)
   * .GetDynamicParameters now supports -NoMandatory (#4)
+
 ---
+
 ## 0.1
 * Initial Release of Piecemeal
+
 ---

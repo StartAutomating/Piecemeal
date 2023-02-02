@@ -1,3 +1,10 @@
+## 0.3.8:
+
+* Adding .HasValidation to all extensions (Fixes #117)
+* All extension methods and properties are now prevalidated in case of collision (Fixes #118)
+
+---
+
 ## 0.3.7:
 
 * Get-Extension:  Stringifying input for ValidatePattern (Fixes #114)

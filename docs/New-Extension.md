@@ -33,26 +33,24 @@ The name of the extension
 
 
 
-> **Type**: ```[String]```
 
-> **Required**: false
 
-> **Position**: 1
 
-> **PipelineInput**:true (ByPropertyName)
+|Type      |Required|Position|PipelineInput        |
+|----------|--------|--------|---------------------|
+|`[String]`|false   |1       |true (ByPropertyName)|
 
 
 
 ---
 #### **ScriptBlock**
 
-> **Type**: ```[ScriptBlock]```
 
-> **Required**: false
 
-> **Position**: 2
 
-> **PipelineInput**:true (ByPropertyName)
+|Type           |Required|Position|PipelineInput        |
+|---------------|--------|--------|---------------------|
+|`[ScriptBlock]`|false   |2       |true (ByPropertyName)|
 
 
 
@@ -63,13 +61,12 @@ One or more commands being extended.
 
 
 
-> **Type**: ```[String[]]```
 
-> **Required**: false
 
-> **Position**: 3
 
-> **PipelineInput**:true (ByPropertyName)
+|Type        |Required|Position|PipelineInput        |
+|------------|--------|--------|---------------------|
+|`[String[]]`|false   |3       |true (ByPropertyName)|
 
 
 
@@ -80,13 +77,12 @@ The extension module.  If provided, this will have to prefix the ExtensionNameRe
 
 
 
-> **Type**: ```[String]```
 
-> **Required**: false
 
-> **Position**: 4
 
-> **PipelineInput**:true (ByPropertyName)
+|Type      |Required|Position|PipelineInput        |
+|----------|--------|--------|---------------------|
+|`[String]`|false   |4       |true (ByPropertyName)|
 
 
 
@@ -98,13 +94,12 @@ The key is the name of the parameter.  The value is any parameter type or attrib
 
 
 
-> **Type**: ```[IDictionary]```
 
-> **Required**: false
 
-> **Position**: 5
 
-> **PipelineInput**:true (ByPropertyName)
+|Type           |Required|Position|PipelineInput        |
+|---------------|--------|--------|---------------------|
+|`[IDictionary]`|false   |5       |true (ByPropertyName)|
 
 
 
@@ -115,13 +110,12 @@ A collection of Extension Parameter Help.
 
 
 
-> **Type**: ```[IDictionary]```
 
-> **Required**: false
 
-> **Position**: 6
 
-> **PipelineInput**:true (ByPropertyName)
+|Type           |Required|Position|PipelineInput        |
+|---------------|--------|--------|---------------------|
+|`[IDictionary]`|false   |6       |true (ByPropertyName)|
 
 
 
@@ -140,13 +134,12 @@ Valid Values:
 
 
 
-> **Type**: ```[String]```
 
-> **Required**: false
 
-> **Position**: 7
 
-> **PipelineInput**:true (ByPropertyName)
+|Type      |Required|Position|PipelineInput        |
+|----------|--------|--------|---------------------|
+|`[String]`|false   |7       |true (ByPropertyName)|
 
 
 
@@ -157,13 +150,12 @@ The synopsis used for the extension.
 
 
 
-> **Type**: ```[String]```
 
-> **Required**: false
 
-> **Position**: 8
 
-> **PipelineInput**:true (ByPropertyName)
+|Type      |Required|Position|PipelineInput        |
+|----------|--------|--------|---------------------|
+|`[String]`|false   |8       |true (ByPropertyName)|
 
 
 
@@ -174,26 +166,24 @@ Any help links for the extension.
 
 
 
-> **Type**: ```[String[]]```
 
-> **Required**: false
 
-> **Position**: 9
 
-> **PipelineInput**:true (ByPropertyName)
+|Type        |Required|Position|PipelineInput        |
+|------------|--------|--------|---------------------|
+|`[String[]]`|false   |9       |true (ByPropertyName)|
 
 
 
 ---
 #### **ExtensionExample**
 
-> **Type**: ```[String[]]```
 
-> **Required**: false
 
-> **Position**: 10
 
-> **PipelineInput**:true (ByPropertyName)
+|Type        |Required|Position|PipelineInput        |
+|------------|--------|--------|---------------------|
+|`[String[]]`|false   |10      |true (ByPropertyName)|
 
 
 

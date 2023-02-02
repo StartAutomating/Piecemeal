@@ -36,13 +36,12 @@ The name of the module that is being extended.
 
 
 
-> **Type**: ```[String]```
 
-> **Required**: false
 
-> **Position**: 1
 
-> **PipelineInput**:true (ByPropertyName)
+|Type      |Required|Position|PipelineInput        |
+|----------|--------|--------|---------------------|
+|`[String]`|false   |1       |true (ByPropertyName)|
 
 
 
@@ -60,13 +59,12 @@ Valid Values:
 
 
 
-> **Type**: ```[String[]]```
 
-> **Required**: false
 
-> **Position**: 2
 
-> **PipelineInput**:true (ByPropertyName)
+|Type        |Required|Position|PipelineInput        |
+|------------|--------|--------|---------------------|
+|`[String[]]`|false   |2       |true (ByPropertyName)|
 
 
 
@@ -77,13 +75,12 @@ One or more aliases used to refer to the module being extended.
 
 
 
-> **Type**: ```[String[]]```
 
-> **Required**: false
 
-> **Position**: 3
 
-> **PipelineInput**:true (ByPropertyName)
+|Type        |Required|Position|PipelineInput        |
+|------------|--------|--------|---------------------|
+|`[String[]]`|false   |3       |true (ByPropertyName)|
 
 
 
@@ -95,13 +92,12 @@ If provided, will override the default extension name regular expression
 
 
 
-> **Type**: ```[String[]]```
 
-> **Required**: false
 
-> **Position**: 4
 
-> **PipelineInput**:true (ByPropertyName)
+|Type        |Required|Position|PipelineInput        |
+|------------|--------|--------|---------------------|
+|`[String[]]`|false   |4       |true (ByPropertyName)|
 
 
 
@@ -112,13 +108,12 @@ The type name to add to an extension.  This can be used to format the extension.
 
 
 
-> **Type**: ```[String]```
 
-> **Required**: false
 
-> **Position**: 5
 
-> **PipelineInput**:true (ByPropertyName)
+|Type      |Required|Position|PipelineInput        |
+|----------|--------|--------|---------------------|
+|`[String]`|false   |5       |true (ByPropertyName)|
 
 
 
@@ -129,13 +124,12 @@ The noun used for any extension commands.
 
 
 
-> **Type**: ```[String]```
 
-> **Required**: false
 
-> **Position**: 6
 
-> **PipelineInput**:true (ByPropertyName)
+|Type      |Required|Position|PipelineInput        |
+|----------|--------|--------|---------------------|
+|`[String]`|false   |6       |true (ByPropertyName)|
 
 
 
@@ -147,13 +141,12 @@ This attribute can associate the extension with one or more commands.
 
 
 
-> **Type**: ```[Switch]```
 
-> **Required**: false
 
-> **Position**: named
 
-> **PipelineInput**:true (ByPropertyName)
+|Type      |Required|Position|PipelineInput        |
+|----------|--------|--------|---------------------|
+|`[Switch]`|false   |named   |true (ByPropertyName)|
 
 
 
@@ -166,13 +159,12 @@ Otherwise, contents will be returned.
 
 
 
-> **Type**: ```[String]```
 
-> **Required**: false
 
-> **Position**: 7
 
-> **PipelineInput**:true (ByPropertyName)
+|Type      |Required|Position|PipelineInput        |
+|----------|--------|--------|---------------------|
+|`[String]`|false   |7       |true (ByPropertyName)|
 
 
 
@@ -183,13 +175,12 @@ If provided, will rename variables.
 
 
 
-> **Type**: ```[IDictionary]```
 
-> **Required**: false
 
-> **Position**: 8
 
-> **PipelineInput**:true (ByPropertyName)
+|Type           |Required|Position|PipelineInput        |
+|---------------|--------|--------|---------------------|
+|`[IDictionary]`|false   |8       |true (ByPropertyName)|
 
 
 
@@ -200,13 +191,12 @@ A custom Foreach-Object that will be appended to main pipelines within Get-Exten
 
 
 
-> **Type**: ```[ScriptBlock[]]```
 
-> **Required**: false
 
-> **Position**: 9
 
-> **PipelineInput**:false
+|Type             |Required|Position|PipelineInput|
+|-----------------|--------|--------|-------------|
+|`[ScriptBlock[]]`|false   |9       |false        |
 
 
 
@@ -217,13 +207,12 @@ A custom Where-Object that will be injected to the main pipelines within Get-Ext
 
 
 
-> **Type**: ```[ScriptBlock[]]```
 
-> **Required**: false
 
-> **Position**: 10
 
-> **PipelineInput**:false
+|Type             |Required|Position|PipelineInput|
+|-----------------|--------|--------|-------------|
+|`[ScriptBlock[]]`|false   |10      |false        |
 
 
 

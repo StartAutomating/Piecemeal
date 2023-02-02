@@ -1,5 +1,5 @@
 ﻿@{
-    ModuleVersion    = '0.3.7'
+    ModuleVersion    = '0.3.8'
     RootModule       = 'Piecemeal.psm1'
     Description      = 'Easy Extensible Plugins for PowerShell'
     GUID             = '91e2c328-d7dc-44a3-aeeb-ef3b19c36767'
@@ -13,6 +13,13 @@
               ProjectURI   = 'https://github.com/StartAutomating/Piecemeal'
               LicenseURI   = 'https://github.com/StartAutomating/Piecemeal/blob/main/LICENSE'
               ReleaseNotes = @'
+## 0.3.8:
+
+* Adding .HasValidation to all extensions (Fixes #117)
+* All extension methods and properties are now prevalidated in case of collision (Fixes #118)
+
+---
+
 ## 0.3.7:
 
 * Get-Extension:  Stringifying input for ValidatePattern (Fixes #114)

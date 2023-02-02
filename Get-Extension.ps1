@@ -252,6 +252,7 @@
                     $ExecutionContext.SessionState.InvokeCommand.GetCommand($in, 'Function,ExternalScript,Application')
                 }
 
+            #region .GetExtendedCommands
             $extCmd.PSObject.Methods.Add([psscriptmethod]::new('GetExtendedCommands', {
                 param([Management.Automation.CommandInfo[]]$CommandList)
                 $extendedCommandNames = @(
@@ -288,6 +289,7 @@
                 $this | Add-Member NoteProperty Extends $extends.Keys -Force
                 $this | Add-Member NoteProperty ExtensionCommands $extends.Values -Force
             }), $true)
+            #endregion .GetExtendedCommands
 
             if (-not $script:AllCommands) {
                 $script:AllCommands = $ExecutionContext.SessionState.InvokeCommand.GetCommands('*','Function,Alias,Cmdlet', $true)
@@ -298,6 +300,7 @@
 
             $inheritanceLevel = [ComponentModel.InheritanceLevel]::Inherited
 
+            #region .BlockComments
             $extCmd.PSObject.Properties.Add([psscriptproperty]::New('BlockComments', {
                 [Regex]::New("                   
                 \<\# # The opening tag
@@ -307,7 +310,9 @@
                 \#\> # the closing tag
                 ", 'IgnoreCase,IgnorePatternWhitespace', '00:00:01').Matches($this.ScriptBlock)
             }), $true)
+            #endregion .BlockComments
 
+            #region .GetHelpField
             $extCmd.PSObject.Methods.Add([psscriptmethod]::New('GetHelpField', {
                 param([Parameter(Mandatory)]$Field)
                 $fieldNames = 'synopsis','description','link','example','inputs', 'outputs', 'parameter', 'notes'
@@ -329,16 +334,25 @@
                     }                    
                 }
             }), $true)
+            #endregion .GetHelpField
 
+            #region .InheritanceLevel
             $extCmd.PSObject.Properties.Add([PSNoteProperty]::new('InheritanceLevel', $inheritanceLevel), $true)
+            #endregion .InheritanceLevel
+
+            #region .DisplayName
             $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
                 'DisplayName', [ScriptBlock]::Create("`$this.Name -replace '$extensionFullRegex'")
             ), $true)
+            #endregion .DisplayName
+            
+            #region .Attributes
             $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
                 'Attributes', {$this.ScriptBlock.Attributes}
             ), $true)
+            #endregion .Attributes
 
-
+            #region .Category
             $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
                 'Category', {
                     foreach ($attr in $this.ScriptBlock.Attributes) {
@@ -353,7 +367,9 @@
                     
                 }
             ), $true)
+            #endregion .Category
 
+            #region .Rank
             $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
                 'Rank', {
                     foreach ($attr in $this.ScriptBlock.Attributes) {
@@ -365,7 +381,9 @@
                     return 0
                 }
             ), $true)
+            #endregion .Rank
             
+            #region .Metadata
             $extCmd.PSObject.Properties.Add([psscriptproperty]::new(
                 'Metadata', {
                     $Metadata = [Ordered]@{}
@@ -381,21 +399,31 @@
                     return $Metadata
                 }
             ), $true)
+            #endregion .Metadata
 
+            #region .Description
             $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
                 'Description', { @($this.GetHelpField("Description"))[0] -replace '^\s+' }
             ), $true)
+            #endregion .Description
 
+            #region .Synopsis
             $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
                 'Synopsis', { @($this.GetHelpField("Synopsis"))[0] -replace '^\s+' }), $true)
+            #endregion .Synopsis
 
+            #region .Examples
             $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
                 'Examples', { $this.GetHelpField("Example") }), $true)
+            #endregion .Examples
 
+            #region .Links
             $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
                 'Links', { $this.GetHelpField("Link") }), $true
             )
+            #endregion .Links
 
+            #region .Validate
             $extCmd.PSObject.Methods.Add([psscriptmethod]::new('Validate', {
                 param(
                     # input being validated
@@ -486,7 +514,9 @@
                     return $false
                 }
             }), $true)
+            #endregion .Validate
 
+            #region .GetDynamicParameters
             $extCmd.PSObject.Methods.Add([PSScriptMethod]::new('GetDynamicParameters', {
                 param(
                 [string]
@@ -583,8 +613,10 @@
                 $ExtensionDynamicParameters
 
             }), $true)
+            #endregion .GetDynamicParameters
 
 
+            #region .IsParameterValid
             $extCmd.PSObject.Methods.Add([PSScriptMethod]::new('IsParameterValid', {
                 param([Parameter(Mandatory)]$ParameterName, [PSObject]$Value)
 
@@ -617,7 +649,9 @@
                 }
                 return $true
             }), $true)
+            #endregion .IsParameterValid
 
+            #region .CouldPipe
             $extCmd.PSObject.Methods.Add([PSScriptMethod]::new('CouldPipe', {
                 param([PSObject]$InputObject)
 
@@ -665,7 +699,9 @@
                     }
                 }
             }), $true)
+            #endregion .CouldPipe
 
+            #region .CouldRun
             $extCmd.PSObject.Methods.Add([PSScriptMethod]::new('CouldRun', {
                 param([Collections.IDictionary]$params, [string]$ParameterSetName)
 
@@ -705,6 +741,7 @@
                 }
                 return $false
             }), $true)
+            #endregion .CouldRun
 
             $extCmd.pstypenames.clear()
             if ($ExtensionTypeName) {

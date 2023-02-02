@@ -516,6 +516,21 @@
             }), $true)
             #endregion .Validate
 
+            #region .HasValidation
+            $extCmd.PSObject.Methods.Add([psscriptproperty]::new('HasValidation', {                
+                foreach ($attr in $this.ScriptBlock.Attributes) {
+                    if ($attr -is [Management.Automation.ValidateScriptAttribute] -or
+                        $attr -is [Management.Automation.ValidateSetAttribute] -or 
+                        $attr -is [Management.Automation.ValidatePatternAttribute] -or 
+                        $attr -is [Management.Automation.ValidateRangeAttribute]) {
+                        return $true                        
+                    }
+                }
+
+                return $false
+            }), $true)
+            #endregion .HasValidation
+
             #region .GetDynamicParameters
             $extCmd.PSObject.Methods.Add([PSScriptMethod]::new('GetDynamicParameters', {
                 param(

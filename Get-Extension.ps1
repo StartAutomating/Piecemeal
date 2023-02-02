@@ -516,8 +516,8 @@
             }), $true)
             #endregion .Validate
 
-            #region .HasValidation
-            $extCmd.PSObject.Methods.Add([psscriptproperty]::new('HasValidation', {                
+            #region .HasValidation            
+            $extCmd.PSObject.Properties.Add([psscriptproperty]::new('HasValidation', {
                 foreach ($attr in $this.ScriptBlock.Attributes) {
                     if ($attr -is [Management.Automation.ValidateScriptAttribute] -or
                         $attr -is [Management.Automation.ValidateSetAttribute] -or 
@@ -528,7 +528,7 @@
                 }
 
                 return $false
-            }), $true)
+            }), $true)            
             #endregion .HasValidation
 
             #region .GetDynamicParameters

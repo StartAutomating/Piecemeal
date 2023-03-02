@@ -666,7 +666,7 @@
                 return $true
             }), $true)
             #endregion .IsParameterValid
-
+            
             #region .CouldPipe
             $extCmd.PSObject.Methods.Add([PSScriptMethod]::new('CouldPipe', {
                 param([PSObject]$InputObject)
@@ -716,6 +716,31 @@
                 }
             }), $true)
             #endregion .CouldPipe
+
+            #region .CouldPipeType
+            $extCmd.PSObject.Methods.Add([PSScriptMethod]::new('CouldPipeType', {
+                param([Type]$Type)
+                
+                foreach ($paramSet in $this.ParameterSets) {
+                    if ($ParameterSetName -and $paramSet.Name -ne $ParameterSetName) { continue }
+                    # Walk thru each parameter of this command
+                    foreach ($myParam in $paramSet.Parameters) {
+                        # If the parameter is ValueFromPipeline
+                        if ($myParam.ValueFromPipeline -and (
+                                $myParam.ParameterType -eq $Type -or
+                                # (or a subclass of that type)
+                                $Type.IsSubClassOf($myParam.ParameterType) -or
+                                # (or an inteface of that type)
+                                ($myParam.ParameterType.IsInterface -and $Type.GetInterface($myParam.ParameterType))
+                            )
+                        ) {
+                            return $true
+                        }                        
+                    }
+                    return $false
+                }
+            }), $true)
+            #endregion .CouldPipeType
 
             #region .CouldRun
             $extCmd.PSObject.Methods.Add([PSScriptMethod]::new('CouldRun', {

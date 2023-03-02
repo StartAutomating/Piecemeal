@@ -146,6 +146,26 @@ describe Piecemeal {
                 $MyCustomTypeName
             }
         } | Set-Content .\09.ext.ps1
+
+        function func.ext.ps1 {
+            [ValidateScript({                
+                return $true
+            })]
+            param()
+
+            $MyInvocation.MyCommand.Name
+        }
+
+        function thisWillBeAliasedAndBecomeAnExtension {
+            [ValidateScript({                
+                return $true
+            })]
+            param()
+
+            $MyInvocation.MyCommand.Name
+        }
+
+        Set-Alias alias.ext.ps1 thisWillBeAliasedAndBecomeAnExtension
     }
     context 'Get-Extension' {
         it '-ExtensionPath' {
@@ -242,6 +262,22 @@ describe Piecemeal {
             $sp.Process([PSCustomObject]@{Bar='bar'}) | Should -Be @('Foo','Bar')
             $sp.End() | Should -be 'Foo'
         }
+
+        context "Functions as extensions" {
+            it 'Can see a function as an extension' {
+                
+        
+                Get-Extension -ExtensionName func* -Like -Force | 
+                    Should -Not -Be $null
+            }
+    
+            it 'Can see an alias an an extension' {
+                
+        
+                Get-Extension -ExtensionName alias* -Like -Force | 
+                    Should -Not -Be $null
+            }    
+        }        
     }
 
     context 'New-Extension' {

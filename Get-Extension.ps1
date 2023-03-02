@@ -10,6 +10,7 @@
 
         * Any module that includes -ExtensionModuleName in it's tags.
         * The directory specified in -ExtensionPath
+        * Commands that meet the naming criteria
     .Example
         Get-Extension
     #>
@@ -249,7 +250,7 @@
                     $ExecutionContext.SessionState.InvokeCommand.GetCommand($in.fullname, 'ExternalScript,Application')
                 }
                 else {
-                    $ExecutionContext.SessionState.InvokeCommand.GetCommand($in, 'Function,ExternalScript,Application')
+                    $ExecutionContext.SessionState.InvokeCommand.GetCommand($in, 'Alias,Function,ExternalScript,Application')
                 }
 
             #region .GetExtendedCommands
@@ -945,7 +946,7 @@
         if (-not $script:Extensions)
         {
             $script:Extensions =
-                @(
+                @(@(
                 #region Find Extensions in Loaded Modules
                 foreach ($loadedModule in $loadedModules) { # Walk over all modules.
                     if ( # If the module has PrivateData keyed to this module
@@ -978,11 +979,22 @@
                             Split-Path |
                             Get-ChildItem -Recurse |
                             Where-Object { $_.Name -Match $extensionFullRegex } |
-                            ConvertToExtension
+                            ConvertToExtension                        
                     }
                 }
                 #endregion Find Extensions in Loaded Modules
-                )
+
+                #region Find Extensions in Loaded Commands
+                $loadedCommands = @($ExecutionContext.SessionState.InvokeCommand.GetCommands('*', 'Function,Alias,Cmdlet', $true))
+                foreach ($command in $loadedCommands) {
+                    if ($command.Name -match $extensionFullRegex) {
+                        $command                        
+                    } elseif ($command.Source -and $command.Source -match $extensionFullRegex) {
+                        $command.Source
+                    }
+                }
+                #endregion Find Extensions in Loaded Commands
+                ) | Select-Object -Unique)
         }
         #endregion Find Extensions
     }

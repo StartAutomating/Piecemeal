@@ -1,22 +1,38 @@
 Install-Piecemeal
 -----------------
+
+
+
+
 ### Synopsis
 Installs Piecemeal
 
+
+
 ---
+
+
 ### Description
 
 Installs Piecemeal into a module.
 
 This enables extensibility within the module.
 
+
+
 ---
+
+
 ### Related Links
 * [Get-Extension](Get-Extension.md)
 
 
 
+
+
 ---
+
+
 ### Examples
 #### EXAMPLE 1
 ```PowerShell
@@ -28,7 +44,11 @@ Install-Piecemeal -ExtensionModule RoughDraft -ExtensionModuleAlias rd -Extensio
 1{0,1})$','\.ps(?<IsPowerShell>1{0,1})\.(?<Extension>[^.]+$)','\.ps(?<IsPowerShell>1{0,1})$' -OutputPath '.\Get-PipeScript.ps1' -RenameVariable @{ExtensionPath='PipeScriptPath'}
 ```
 
+
+
 ---
+
+
 ### Parameters
 #### **ExtensionModule**
 
@@ -45,7 +65,6 @@ The name of the module that is being extended.
 
 
 
----
 #### **Verb**
 
 The verbs to install.  By default, installs Get.
@@ -68,7 +87,6 @@ Valid Values:
 
 
 
----
 #### **ExtensionModuleAlias**
 
 One or more aliases used to refer to the module being extended.
@@ -84,7 +102,6 @@ One or more aliases used to refer to the module being extended.
 
 
 
----
 #### **ExtensionPattern**
 
 If provided, will override the default extension name regular expression
@@ -95,13 +112,12 @@ If provided, will override the default extension name regular expression
 
 
 
-|Type        |Required|Position|PipelineInput        |
-|------------|--------|--------|---------------------|
-|`[String[]]`|false   |4       |true (ByPropertyName)|
+|Type        |Required|Position|PipelineInput        |Aliases                                 |
+|------------|--------|--------|---------------------|----------------------------------------|
+|`[String[]]`|false   |4       |true (ByPropertyName)|ExtensionNameRegEx<br/>ExtensionPatterns|
 
 
 
----
 #### **ExtensionTypeName**
 
 The type name to add to an extension.  This can be used to format the extension.
@@ -117,7 +133,6 @@ The type name to add to an extension.  This can be used to format the extension.
 
 
 
----
 #### **ExtensionNoun**
 
 The noun used for any extension commands.
@@ -133,7 +148,6 @@ The noun used for any extension commands.
 
 
 
----
 #### **RequireCmdletAttribute**
 
 If set, will require a [Management.Automation.Cmdlet] attribute to be considered an extension.
@@ -150,7 +164,6 @@ This attribute can associate the extension with one or more commands.
 
 
 
----
 #### **OutputPath**
 
 The output path.
@@ -168,7 +181,6 @@ Otherwise, contents will be returned.
 
 
 
----
 #### **RenameVariable**
 
 If provided, will rename variables.
@@ -184,7 +196,6 @@ If provided, will rename variables.
 
 
 
----
 #### **ForeachObject**
 
 A custom Foreach-Object that will be appended to main pipelines within Get-Extension.
@@ -200,7 +211,6 @@ A custom Foreach-Object that will be appended to main pipelines within Get-Exten
 
 
 
----
 #### **WhereObject**
 
 A custom Where-Object that will be injected to the main pipelines within Get-Extension
@@ -216,7 +226,11 @@ A custom Where-Object that will be injected to the main pipelines within Get-Ext
 
 
 
+
+
 ---
+
+
 ### Outputs
 * [String](https://learn.microsoft.com/en-us/dotnet/api/System.String)
 
@@ -226,11 +240,20 @@ A custom Where-Object that will be injected to the main pipelines within Get-Ext
 
 
 
+
+
 ---
+
+
+### Notes
+This returns a modified Get-Extension
+
+
+
+---
+
+
 ### Syntax
 ```PowerShell
 Install-Piecemeal [[-ExtensionModule] <String>] [[-Verb] <String[]>] [[-ExtensionModuleAlias] <String[]>] [[-ExtensionPattern] <String[]>] [[-ExtensionTypeName] <String>] [[-ExtensionNoun] <String>] [-RequireCmdletAttribute] [[-OutputPath] <String>] [[-RenameVariable] <IDictionary>] [[-ForeachObject] <ScriptBlock[]>] [[-WhereObject] <ScriptBlock[]>] [<CommonParameters>]
 ```
----
-### Notes
-This returns a modified Get-Extension

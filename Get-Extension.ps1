@@ -343,8 +343,28 @@
 
             #region .DisplayName
             $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
-                'DisplayName', [ScriptBlock]::Create("`$this.Name -replace '$extensionFullRegex'")
+                'DisplayName', {
+                    if ($this.'.DisplayName') {
+                        return $this.'.DisplayName'
+                    }
+                    if ($this.ScriptBlock.Attributes) {
+                        foreach ($attr in $this.ScriptBlock.Attributes) {
+                            if ($attr -is [ComponentModel.DisplayNameAttribute]) {
+                                $this | Add-Member NoteProperty '.DisplayName' $attr.DisplayName -Force
+                                return $attr.DisplayName
+                            }
+                        }
+                    }
+                    $this | Add-Member NoteProperty '.DisplayName' $this.Name
+                    return $this.Name
+                }, {
+                    $this | Add-Member NoteProperty '.DisplayName' $args -Force
+                }
             ), $true)
+
+            $extCmd.PSObject.Properties.Add([PSNoteProperty]::new(
+                '.DisplayName', "`$this.Name -replace '$extensionFullRegex'"
+            ), $true)            
             #endregion .DisplayName
             
             #region .Attributes
@@ -720,7 +740,7 @@
             #region .CouldPipeType
             $extCmd.PSObject.Methods.Add([PSScriptMethod]::new('CouldPipeType', {
                 param([Type]$Type)
-                
+
                 foreach ($paramSet in $this.ParameterSets) {
                     if ($ParameterSetName -and $paramSet.Name -ne $ParameterSetName) { continue }
                     # Walk thru each parameter of this command

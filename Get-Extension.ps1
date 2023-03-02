@@ -571,7 +571,7 @@
                 $ExtensionDynamicParameters = [Management.Automation.RuntimeDefinedParameterDictionary]::new()
                 $Extension = $this
 
-                :nextDynamicParameter foreach ($in in @(([Management.Automation.CommandMetaData]$Extension).Parameters.Keys)) {
+                :nextDynamicParameter foreach ($in in @(($Extension -as [Management.Automation.CommandMetaData]).Parameters.Keys)) {
                     $attrList = [Collections.Generic.List[Attribute]]::new()
                     $validCommandNames = @()
                     foreach ($attr in $extension.Parameters[$in].attributes) {
@@ -846,7 +846,7 @@
                     # Then, walk over each extension parameter.
                     foreach ($kv in $extensionParams.GetEnumerator()) {
                         # If the $CommandExtended had a built-in parameter, we cannot override it, so skip it.
-                        if ($commandExtended -and ([Management.Automation.CommandMetaData]$commandExtended).Parameters.$($kv.Key)) {
+                        if ($commandExtended -and ($commandExtended -as [Management.Automation.CommandMetaData]).Parameters.$($kv.Key)) {
                             continue
                         }
 
@@ -1022,7 +1022,7 @@
                     elseif ($loadedModule.PrivateData.PSData.Tags -contains $myModuleName -or $loadedModule.Name -eq $myModuleName) {
                         $loadedModule |
                             Split-Path |
-                            Get-ChildItem -Recurse |
+                            Get-ChildItem -Recurse -File |
                             Where-Object { $_.Name -Match $extensionFullRegex } |
                             ConvertToExtension                        
                     }
@@ -1047,7 +1047,7 @@
     process {
 
         if ($ExtensionPath) {
-            Get-ChildItem -Recurse -Path $ExtensionPath |
+            Get-ChildItem -Recurse -Path $ExtensionPath -File |
                 Where-Object { $_.Name -Match $extensionFullRegex } |
                 ConvertToExtension |
                 . WhereExtends $CommandName |

@@ -363,7 +363,7 @@
             ), $true)
 
             $extCmd.PSObject.Properties.Add([PSNoteProperty]::new(
-                '.DisplayName', "`$this.Name -replace '$extensionFullRegex'"
+                '.DisplayName', "$($extCmd.Name -replace $extensionFullRegex)"
             ), $true)            
             #endregion .DisplayName
             

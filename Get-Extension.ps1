@@ -10,6 +10,7 @@
 
         * Any module that includes -ExtensionModuleName in it's tags.
         * The directory specified in -ExtensionPath
+        * Commands that meet the naming criteria
     .Example
         Get-Extension
     #>
@@ -249,7 +250,7 @@
                     $ExecutionContext.SessionState.InvokeCommand.GetCommand($in.fullname, 'ExternalScript,Application')
                 }
                 else {
-                    $ExecutionContext.SessionState.InvokeCommand.GetCommand($in, 'Function,ExternalScript,Application')
+                    $ExecutionContext.SessionState.InvokeCommand.GetCommand($in, 'Alias,Function,ExternalScript,Application')
                 }
 
             #region .GetExtendedCommands
@@ -342,8 +343,28 @@
 
             #region .DisplayName
             $extCmd.PSObject.Properties.Add([PSScriptProperty]::new(
-                'DisplayName', [ScriptBlock]::Create("`$this.Name -replace '$extensionFullRegex'")
+                'DisplayName', {
+                    if ($this.'.DisplayName') {
+                        return $this.'.DisplayName'
+                    }
+                    if ($this.ScriptBlock.Attributes) {
+                        foreach ($attr in $this.ScriptBlock.Attributes) {
+                            if ($attr -is [ComponentModel.DisplayNameAttribute]) {
+                                $this | Add-Member NoteProperty '.DisplayName' $attr.DisplayName -Force
+                                return $attr.DisplayName
+                            }
+                        }
+                    }
+                    $this | Add-Member NoteProperty '.DisplayName' $this.Name
+                    return $this.Name
+                }, {
+                    $this | Add-Member NoteProperty '.DisplayName' $args -Force
+                }
             ), $true)
+
+            $extCmd.PSObject.Properties.Add([PSNoteProperty]::new(
+                '.DisplayName', "$($extCmd.Name -replace $extensionFullRegex)"
+            ), $true)            
             #endregion .DisplayName
             
             #region .Attributes
@@ -550,7 +571,7 @@
                 $ExtensionDynamicParameters = [Management.Automation.RuntimeDefinedParameterDictionary]::new()
                 $Extension = $this
 
-                :nextDynamicParameter foreach ($in in @(([Management.Automation.CommandMetaData]$Extension).Parameters.Keys)) {
+                :nextDynamicParameter foreach ($in in @(($Extension -as [Management.Automation.CommandMetaData]).Parameters.Keys)) {
                     $attrList = [Collections.Generic.List[Attribute]]::new()
                     $validCommandNames = @()
                     foreach ($attr in $extension.Parameters[$in].attributes) {
@@ -665,7 +686,7 @@
                 return $true
             }), $true)
             #endregion .IsParameterValid
-
+            
             #region .CouldPipe
             $extCmd.PSObject.Methods.Add([PSScriptMethod]::new('CouldPipe', {
                 param([PSObject]$InputObject)
@@ -716,6 +737,31 @@
             }), $true)
             #endregion .CouldPipe
 
+            #region .CouldPipeType
+            $extCmd.PSObject.Methods.Add([PSScriptMethod]::new('CouldPipeType', {
+                param([Type]$Type)
+
+                foreach ($paramSet in $this.ParameterSets) {
+                    if ($ParameterSetName -and $paramSet.Name -ne $ParameterSetName) { continue }
+                    # Walk thru each parameter of this command
+                    foreach ($myParam in $paramSet.Parameters) {
+                        # If the parameter is ValueFromPipeline
+                        if ($myParam.ValueFromPipeline -and (
+                                $myParam.ParameterType -eq $Type -or
+                                # (or a subclass of that type)
+                                $Type.IsSubClassOf($myParam.ParameterType) -or
+                                # (or an inteface of that type)
+                                ($myParam.ParameterType.IsInterface -and $Type.GetInterface($myParam.ParameterType))
+                            )
+                        ) {
+                            return $true
+                        }                        
+                    }
+                    return $false
+                }
+            }), $true)
+            #endregion .CouldPipeType
+
             #region .CouldRun
             $extCmd.PSObject.Methods.Add([PSScriptMethod]::new('CouldRun', {
                 param([Collections.IDictionary]$params, [string]$ParameterSetName)
@@ -758,11 +804,13 @@
             }), $true)
             #endregion .CouldRun
 
-            $extCmd.pstypenames.clear()
-            if ($ExtensionTypeName) {
-                $extCmd.pstypenames.add($ExtensionTypeName)
-            } else {
-                $extCmd.pstypenames.add('Extension')
+            
+            # Decorate our return (so that it can be uniquely extended)
+            if (-not $ExtensionTypeName) {
+                $ExtensionTypeName = 'Extension'
+            }
+            if ($extCmd.pstypenames -notcontains $ExtensionTypeName) {            
+                $extCmd.pstypenames.insert(0,$ExtensionTypeName)
             }
 
             $extCmd
@@ -800,7 +848,7 @@
                     # Then, walk over each extension parameter.
                     foreach ($kv in $extensionParams.GetEnumerator()) {
                         # If the $CommandExtended had a built-in parameter, we cannot override it, so skip it.
-                        if ($commandExtended -and ([Management.Automation.CommandMetaData]$commandExtended).Parameters.$($kv.Key)) {
+                        if ($commandExtended -and ($commandExtended -as [Management.Automation.CommandMetaData]).Parameters.$($kv.Key)) {
                             continue
                         }
 
@@ -945,7 +993,7 @@
         if (-not $script:Extensions)
         {
             $script:Extensions =
-                @(
+                @(@(
                 #region Find Extensions in Loaded Modules
                 foreach ($loadedModule in $loadedModules) { # Walk over all modules.
                     if ( # If the module has PrivateData keyed to this module
@@ -976,13 +1024,24 @@
                     elseif ($loadedModule.PrivateData.PSData.Tags -contains $myModuleName -or $loadedModule.Name -eq $myModuleName) {
                         $loadedModule |
                             Split-Path |
-                            Get-ChildItem -Recurse |
+                            Get-ChildItem -Recurse -File |
                             Where-Object { $_.Name -Match $extensionFullRegex } |
-                            ConvertToExtension
+                            ConvertToExtension                        
                     }
                 }
                 #endregion Find Extensions in Loaded Modules
-                )
+
+                #region Find Extensions in Loaded Commands
+                $loadedCommands = @($ExecutionContext.SessionState.InvokeCommand.GetCommands('*', 'Function,Alias,Cmdlet', $true))
+                foreach ($command in $loadedCommands) {
+                    if ($command.Name -match $extensionFullRegex) {
+                        $command                        
+                    } elseif ($command.Source -and $command.Source -match $extensionFullRegex) {
+                        $command.Source
+                    }
+                }
+                #endregion Find Extensions in Loaded Commands
+                ) | Select-Object -Unique)
         }
         #endregion Find Extensions
     }
@@ -990,7 +1049,7 @@
     process {
 
         if ($ExtensionPath) {
-            Get-ChildItem -Recurse -Path $ExtensionPath |
+            Get-ChildItem -Recurse -Path $ExtensionPath -File |
                 Where-Object { $_.Name -Match $extensionFullRegex } |
                 ConvertToExtension |
                 . WhereExtends $CommandName |

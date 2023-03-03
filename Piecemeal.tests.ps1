@@ -147,6 +147,7 @@ describe Piecemeal {
             }
         } | Set-Content .\09.ext.ps1
 
+        New-Module -Name PiecemealDynamicTest -ScriptBlock {
         function func.ext.ps1 {
             [ValidateScript({                
                 return $true
@@ -166,6 +167,8 @@ describe Piecemeal {
         }
 
         Set-Alias alias.ext.ps1 thisWillBeAliasedAndBecomeAnExtension
+        Export-ModuleMember -Function * -Alias *
+        } | Import-Module -Global -Force
     }
     context 'Get-Extension' {
         it '-ExtensionPath' {
@@ -317,6 +320,7 @@ describe Piecemeal {
 
     afterAll {
         Get-ChildItem -Path $pwd -Filter *.ext.ps1 | Remove-Item
+        Remove-Module -Name PiecemealDynamicTest
     }
 }
 Pop-Location

@@ -805,6 +805,7 @@
             #endregion .CouldRun
 
             
+            # Decorate our return (so that it can be uniquely extended)
             if (-not $ExtensionTypeName) {
                 $ExtensionTypeName = 'Extension'
             }

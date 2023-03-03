@@ -804,11 +804,12 @@
             }), $true)
             #endregion .CouldRun
 
-            $extCmd.pstypenames.clear()
-            if ($ExtensionTypeName) {
-                $extCmd.pstypenames.add($ExtensionTypeName)
-            } else {
-                $extCmd.pstypenames.add('Extension')
+            
+            if (-not $ExtensionTypeName) {
+                $ExtensionTypeName = 'Extension'
+            }
+            if ($extCmd.pstypenames -notcontains $ExtensionTypeName) {            
+                $extCmd.pstypenames.insert(0,$ExtensionTypeName)
             }
 
             $extCmd

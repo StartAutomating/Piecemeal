@@ -275,8 +275,8 @@
                     }
                 )
                 if (-not $extendedCommandNames) {
-                    $this | Add-Member NoteProperty Extends @() -Force
-                    $this | Add-Member NoteProperty ExtensionCommands @() -Force
+                    $this.PSObject.Properties.Add([psnoteproperty]::new('.Extends', @()), $true)
+                    $this.PSObject.Properties.Add([psnoteproperty]::new('.ExtensionCommands', @()), $true)                    
                     return    
                 }
                 if (-not $CommandList) {
@@ -296,20 +296,44 @@
                 if (-not $extends.Count) {
                     $extends = $null
                 }
-
-                $this | Add-Member NoteProperty Extends $extends.Keys -Force
-                $this | Add-Member NoteProperty ExtensionCommands $extends.Values -Force
+                $this.PSObject.Properties.Add([psnoteproperty]::new('.Extends', @($extends.Keys)), $true)
+                $this.PSObject.Properties.Add([psnoteproperty]::new('.ExtensionCommands', @($extends.Values)), $true)                
             }), $true)
             #endregion .GetExtendedCommands
+
+            #region .Extends
+            $extProperties.Add([psscriptproperty]::new('Extends', {
+                if (-not $this.'.Extends') {
+                    $this.GetExtendedCommands()
+                }
+                return $this.'.Extends'
+            }),$true)
+            #endregion .Extends
+
+            #region .ExtensionCommands
+            $extProperties.Add([psscriptproperty]::new('ExtensionCommands', {
+                if (-not $this.'.ExtensionCommands') {
+                    $this.GetExtendedCommands()
+                }
+                return $this.'.ExtensionCommands'
+            }), $true)
+            #endregion .ExtensionCommands
 
             if (-not $script:AllCommands) {
                 $script:AllCommands = $ExecutionContext.SessionState.InvokeCommand.GetCommands('*','Function,Alias,Cmdlet', $true)
             }
             
 
-            if ($extCmd.ScriptBlock.Attributes.VerbName) {
-                $null = $extCmd.GetExtendedCommands($script:AllCommands)
+            <#
+            $extCmdScriptBlock = $extCmd.ScriptBlock
+            if ($extCmdScriptBlock) {
+                foreach ($attr in $extCmdScriptBlock.Attributes) {
+                    if (-not $attr.VerbName) { continue }
+                    $null = $extCmd.GetExtendedCommands($script:AllCommands)
+                    break
+                }
             }
+            #>
         
 
             $inheritanceLevel = [ComponentModel.InheritanceLevel]::Inherited

@@ -247,7 +247,14 @@
                     $in
                 }
                 elseif ($in -is [IO.FileInfo]) {
-                    $ExecutionContext.SessionState.InvokeCommand.GetCommand($in.fullname, 'ExternalScript,Application')
+                    if ($in.LastWriteTime -gt $script:ExtensionsFileTimes[$in.Fullname]) {
+                        $script:ExtensionsFileTimes[$in.Fullname] = $in.LastWriteTime
+                        $script:ExtensionsFromFiles[$in.Fullname] = 
+                            $ExecutionContext.SessionState.InvokeCommand.GetCommand($in.fullname, 'ExternalScript,Application')
+                        $script:ExtensionsFromFiles[$in.Fullname]
+                    } elseif ($script:ExtensionsFromFiles[$in.Fullname])  {
+                        return $script:ExtensionsFromFiles[$in.Fullname]
+                    }                    
                 }
                 else {
                     $ExecutionContext.SessionState.InvokeCommand.GetCommand($in, 'Alias,Function,ExternalScript,Application')
@@ -995,6 +1002,8 @@
         }
         if (-not $script:Extensions)
         {
+            $script:ExtensionsFromFiles = [Ordered]@{}
+            $script:ExtensionsFileTimes = [Ordered]@{}
             $script:Extensions =
                 @(@(
                 #region Find Extensions in Loaded Modules

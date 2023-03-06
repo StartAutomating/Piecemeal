@@ -240,8 +240,14 @@
                 }
             }
         }
-        filter ConvertToExtension {
-            $in = $_
+        function ConvertToExtension($toExtension) {
+            
+            process {
+                
+            $in = if ($toExtension) {
+                $toExtension
+            } else { $_ }
+                 
             $extCmd =
                 if ($in -is [Management.Automation.CommandInfo]) {
                     $in
@@ -839,6 +845,7 @@
 
             $extCmd
         }
+        }
         function OutputExtension {
             begin {
                 $allDynamicParameters = [Management.Automation.RuntimeDefinedParameterDictionary]::new()
@@ -1042,17 +1049,19 @@
                                         $loadedModule.ExportedCommands[$ed.Value]
                                     }
                                 if ($extensionCmd) { # If we've found a valid extension command
-                                    $extensionCmd | ConvertToExtension # return it as an extension.
+                                    ConvertToExtension $extensionCmd # return it as an extension.
                                 }
                             }
                         }
                     }
                     elseif ($loadedModule.PrivateData.PSData.Tags -contains $myModuleName -or $loadedModule.Name -eq $myModuleName) {
-                        $loadedModule |
-                            Split-Path |
-                            Get-ChildItem -Recurse -File |
-                            Where-Object { $_.Name -Match $extensionFullRegex } |
-                            ConvertToExtension                        
+                        $loadedModuleRoot = Split-Path $loadedModule.Path
+                        if ($loadedModuleRoot) {
+                            foreach ($fileInModule in Get-ChildItem -Path $loadedModuleRoot -Recurse -File -Filter *.ps1) {
+                                if ($fileInModule.Name -notmatch $extensionFullRegex) { continue }
+                                ConvertToExtension $fileInModule
+                            }
+                        }
                     }
                 }
                 #endregion Find Extensions in Loaded Modules
@@ -1068,10 +1077,15 @@
     process {
 
         if ($ExtensionPath) {
-            Get-ChildItem -Recurse -Path $ExtensionPath -File |
-                Where-Object { $_.Name -Match $extensionFullRegex } |
-                ConvertToExtension |
-                . WhereExtends $CommandName |
+            @(foreach ($_ in Get-ChildItem -Recurse -Path $ExtensionPath -File) {
+                if ($_.Name -notmatch $extensionFullRegex) { continue }
+                if ($CommandName) {
+                    ConvertToExtension $_ |
+                    . WhereExtends $CommandName
+                } else {
+                    ConvertToExtension $_
+                }
+            }) |
                 #region Install-Piecemeal -WhereObject
                 # This section can be updated by using Install-Piecemeal -WhereObject
                 #endregion Install-Piecemeal -WhereObject
@@ -1080,12 +1094,13 @@
                 #region Install-Piecemeal -ForeachObject
                 # This section can be updated by using Install-Piecemeal -ForeachObject
                 #endregion Install-Piecemeal -ForeachObject
-        } elseif ($CommandName) {
+        } elseif ($CommandName -or $ExtensionName) {
             $script:Extensions |
                 . WhereExtends $CommandName |                
                 OutputExtension
         } else {
-            $script:Extensions
+            $script:Extensions | 
+                OutputExtension
         }
     }
 }

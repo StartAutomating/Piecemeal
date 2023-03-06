@@ -321,20 +321,7 @@
 
             if (-not $script:AllCommands) {
                 $script:AllCommands = $ExecutionContext.SessionState.InvokeCommand.GetCommands('*','Function,Alias,Cmdlet', $true)
-            }
-            
-
-            <#
-            $extCmdScriptBlock = $extCmd.ScriptBlock
-            if ($extCmdScriptBlock) {
-                foreach ($attr in $extCmdScriptBlock.Attributes) {
-                    if (-not $attr.VerbName) { continue }
-                    $null = $extCmd.GetExtendedCommands($script:AllCommands)
-                    break
-                }
-            }
-            #>
-        
+            }                
 
             $inheritanceLevel = [ComponentModel.InheritanceLevel]::Inherited
 
@@ -1070,15 +1057,8 @@
                 }
                 #endregion Find Extensions in Loaded Modules
 
-                #region Find Extensions in Loaded Commands
-                $loadedCommands = @($ExecutionContext.SessionState.InvokeCommand.GetCommands('*', 'Function,Alias,Cmdlet', $true))
-                foreach ($command in $loadedCommands) {
-                    if ($command.Name -match $extensionFullRegex) {
-                        $command                        
-                    } elseif ($command.Source -and $command.Source -match $extensionFullRegex) {
-                        $command.Source
-                    }
-                }
+                #region Find Extensions in Loaded Commands                
+                $ExecutionContext.SessionState.InvokeCommand.GetCommands('*', 'Function,Alias',$true) -match $extensionFullRegex
                 #endregion Find Extensions in Loaded Commands
                 ) | Select-Object -Unique | Sort-Object Rank, Name)
         }

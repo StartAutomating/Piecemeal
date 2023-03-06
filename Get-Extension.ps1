@@ -297,7 +297,10 @@
             }
             
 
-            $null = $extCmd.GetExtendedCommands($script:AllCommands)
+            if ($extCmd.ScriptBlock.Attributes.VerbName) {
+                $null = $extCmd.GetExtendedCommands($script:AllCommands)
+            }
+        
 
             $inheritanceLevel = [ComponentModel.InheritanceLevel]::Inherited
 
@@ -1041,7 +1044,7 @@
                     }
                 }
                 #endregion Find Extensions in Loaded Commands
-                ) | Select-Object -Unique)
+                ) | Select-Object -Unique | Sort-Object Rank, Name)
         }
         #endregion Find Extensions
     }
@@ -1061,11 +1064,12 @@
                 #region Install-Piecemeal -ForeachObject
                 # This section can be updated by using Install-Piecemeal -ForeachObject
                 #endregion Install-Piecemeal -ForeachObject
-        } else {
+        } elseif ($CommandName) {
             $script:Extensions |
-                . WhereExtends $CommandName |
-                Sort-Object Rank, Name |
+                . WhereExtends $CommandName |                
                 OutputExtension
+        } else {
+            $script:Extensions
         }
     }
 }

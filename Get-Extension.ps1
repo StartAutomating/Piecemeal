@@ -1123,7 +1123,7 @@
         if ($ExtensionPath) {
             @(foreach ($_ in Get-ChildItem -Recurse -Path $ExtensionPath -File) {
                 if ($_.Name -notmatch $extensionFullRegex) { continue }
-                if ($CommandName) {
+                if ($CommandName -or $ExtensionName) {
                     ConvertToExtension $_ |
                     . WhereExtends $CommandName
                 } else {

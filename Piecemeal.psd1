@@ -14,13 +14,13 @@
               LicenseURI   = 'https://github.com/StartAutomating/Piecemeal/blob/main/LICENSE'
               ReleaseNotes = @'
 ## Piecemeal@0.3.10:
+### Piecemeal Performance Improvements
 
-* Piecemeal Performance Improvements:
-  * No Longer Allowing A Cmdlet to be an Extension (Fixes #133)
-  * Improving the performance of .Extends/ .ExtensionCommands (Fixes #132)
-  * Caching Extensions from Files until the File Changes (Fixes #130)
-  * Improving the performance of Get-Extension without -CommandName (Fixes #129)
-  
+* No Longer Allowing A Cmdlet to be an Extension (Fixes #133)
+* Improving the performance of .Extends/ .ExtensionCommands (Fixes #132)
+* Caching Extensions from Files until the File Changes (Fixes #130)
+* Improving the performance of Get-Extension without -CommandName (Fixes #129)
+
 ---
 
 ## Piecemeal@0.3.9:

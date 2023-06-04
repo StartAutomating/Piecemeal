@@ -1,10 +1,10 @@
 ﻿@{
-    ModuleVersion    = '0.3.10'
+    ModuleVersion    = '0.4'
     RootModule       = 'Piecemeal.psm1'
     Description      = 'Easy Extensible Plugins for PowerShell'
     GUID             = '91e2c328-d7dc-44a3-aeeb-ef3b19c36767'
     Author           = 'James Brundage'
-    Copyright        = '2021 Start-Automating'
+    Copyright        = '2021-2023 Start-Automating'
     CompanyName      = 'Start-Automating'
     FormatsToProcess = 'Piecemeal.format.ps1xml'
     PrivateData      = @{
@@ -13,6 +13,14 @@
               ProjectURI   = 'https://github.com/StartAutomating/Piecemeal'
               LicenseURI   = 'https://github.com/StartAutomating/Piecemeal/blob/main/LICENSE'
               ReleaseNotes = @'
+## Piecemeal@0.4:
+
+* Enabling Sponsorship for Piecemeal (#139)
+* Improving -ExtensionName performance (#138)
+* Not recursing when -ExtensionPath is local (#137)
+
+---
+
 ## Piecemeal@0.3.10:
 ### Piecemeal Performance Improvements
 

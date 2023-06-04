@@ -1134,7 +1134,7 @@
                         $script:ExtensionsByDisplayName[$extCmd.DisplayName] = @($script:ExtensionsByDisplayName[$extCmd.DisplayName]) + $extCmd
                     }   
                 }
-                $ExtensionCommandAliases = @($ExtensionCommand.Attributes.AliasNames)
+                $ExtensionCommandAliases = @($extCmd.Attributes.AliasNames)
                 $ExtensionCommandAliasRegexes  = @($ExtensionCommandAliases -match '^/' -match '/$')
                 $ExtensionCommandNormalAliases = @($ExtensionCommandAliases -notmatch '^/')
                 if ($ExtensionCommandAliasRegexes) {
@@ -1149,10 +1149,10 @@
                 }
                 if ($ExtensionCommandNormalAliases) {
                     foreach ($extensionAlias in $ExtensionCommandNormalAliases) {
-                        if (-not $script:ExtensionsByName[$regex]) {
-                            $script:ExtensionsByName[$regex] = $extCmd
+                        if (-not $script:ExtensionsByName[$extensionAlias]) {
+                            $script:ExtensionsByName[$extensionAlias] = $extCmd
                         } else {
-                            $script:ExtensionsByName[$regex] = @($script:ExtensionsByName[$regex]) + $extCmd
+                            $script:ExtensionsByName[$extensionAlias] = @($script:ExtensionsByName[$extensionAlias]) + $extCmd
                         }
                     }
                 }

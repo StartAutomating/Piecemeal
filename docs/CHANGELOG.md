@@ -1,3 +1,11 @@
+## Piecemeal@0.4:
+
+* Enabling Sponsorship for Piecemeal (#139)
+* Improving -ExtensionName performance (#138)
+* Not recursing when -ExtensionPath is local (#137)
+
+---
+
 ## Piecemeal@0.3.10:
 ### Piecemeal Performance Improvements
 

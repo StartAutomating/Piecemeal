@@ -1135,14 +1135,24 @@
                     }   
                 }
                 $ExtensionCommandAliases = @($ExtensionCommand.Attributes.AliasNames)
-                $ExtensionCommandAliasRegexes = @($ExtensionCommandAliases -match '^/' -match '/$')
+                $ExtensionCommandAliasRegexes  = @($ExtensionCommandAliases -match '^/' -match '/$')
+                $ExtensionCommandNormalAliases = @($ExtensionCommandAliases -notmatch '^/')
                 if ($ExtensionCommandAliasRegexes) {
-                    foreach ($extensionAliasRegex in $ExtensionCommandAliases) {
+                    foreach ($extensionAliasRegex in $ExtensionCommandAliasRegexes) {
                         $regex = [Regex]::New($extensionAliasRegex -replace '^/' -replace '/$', 'IgnoreCase,IgnorePatternWhitespace')
                         if (-not $script:ExtensionsByPattern[$regex]) {
                             $script:ExtensionsByPattern[$regex] = $extCmd
                         } else {
                             $script:ExtensionsByPattern[$regex] = @($script:ExtensionsByPattern[$regex]) + $extCmd
+                        }
+                    }
+                }
+                if ($ExtensionCommandNormalAliases) {
+                    foreach ($extensionAlias in $ExtensionCommandNormalAliases) {
+                        if (-not $script:ExtensionsByName[$regex]) {
+                            $script:ExtensionsByName[$regex] = $extCmd
+                        } else {
+                            $script:ExtensionsByName[$regex] = @($script:ExtensionsByName[$regex]) + $extCmd
                         }
                     }
                 }

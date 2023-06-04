@@ -1,4 +1,12 @@
-﻿## Piecemeal@0.4:
+﻿## Piecemeal@0.4.1:
+
+* Enabling Sponsorship for Piecemeal (#139)
+* Improving -ExtensionName performance for Aliases (#141)
+* Tolerating lack of CommandMetaData (#124)
+
+---
+
+## Piecemeal@0.4:
 
 * Enabling Sponsorship for Piecemeal (#139)
 * Improving -ExtensionName performance (#138)

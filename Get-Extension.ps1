@@ -635,6 +635,8 @@
 
                     $ExtensionDynamicParameters = [Management.Automation.RuntimeDefinedParameterDictionary]::new()
                     $Extension = $this
+                    $ExtensionMetadata = $Extension -as [Management.Automation.CommandMetaData]
+                    if (-not $ExtensionMetadata) { return $ExtensionDynamicParameters }
 
                     :nextDynamicParameter foreach ($in in @(($Extension -as [Management.Automation.CommandMetaData]).Parameters.Keys)) {
                         $attrList = [Collections.Generic.List[Attribute]]::new()
@@ -1134,15 +1136,25 @@
                         $script:ExtensionsByDisplayName[$extCmd.DisplayName] = @($script:ExtensionsByDisplayName[$extCmd.DisplayName]) + $extCmd
                     }   
                 }
-                $ExtensionCommandAliases = @($ExtensionCommand.Attributes.AliasNames)
-                $ExtensionCommandAliasRegexes = @($ExtensionCommandAliases -match '^/' -match '/$')
+                $ExtensionCommandAliases = @($extCmd.Attributes.AliasNames)
+                $ExtensionCommandAliasRegexes  = @($ExtensionCommandAliases -match '^/' -match '/$')
+                $ExtensionCommandNormalAliases = @($ExtensionCommandAliases -notmatch '^/')
                 if ($ExtensionCommandAliasRegexes) {
-                    foreach ($extensionAliasRegex in $ExtensionCommandAliases) {
+                    foreach ($extensionAliasRegex in $ExtensionCommandAliasRegexes) {
                         $regex = [Regex]::New($extensionAliasRegex -replace '^/' -replace '/$', 'IgnoreCase,IgnorePatternWhitespace')
                         if (-not $script:ExtensionsByPattern[$regex]) {
                             $script:ExtensionsByPattern[$regex] = $extCmd
                         } else {
                             $script:ExtensionsByPattern[$regex] = @($script:ExtensionsByPattern[$regex]) + $extCmd
+                        }
+                    }
+                }
+                if ($ExtensionCommandNormalAliases) {
+                    foreach ($extensionAlias in $ExtensionCommandNormalAliases) {
+                        if (-not $script:ExtensionsByName[$extensionAlias]) {
+                            $script:ExtensionsByName[$extensionAlias] = $extCmd
+                        } else {
+                            $script:ExtensionsByName[$extensionAlias] = @($script:ExtensionsByName[$extensionAlias]) + $extCmd
                         }
                     }
                 }

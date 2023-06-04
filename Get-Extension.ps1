@@ -635,6 +635,8 @@
 
                     $ExtensionDynamicParameters = [Management.Automation.RuntimeDefinedParameterDictionary]::new()
                     $Extension = $this
+                    $ExtensionMetadata = $Extension -as [Management.Automation.CommandMetaData]
+                    if (-not $ExtensionMetadata) { return $ExtensionDynamicParameters }
 
                     :nextDynamicParameter foreach ($in in @(($Extension -as [Management.Automation.CommandMetaData]).Parameters.Keys)) {
                         $attrList = [Collections.Generic.List[Attribute]]::new()

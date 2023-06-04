@@ -1121,7 +1121,7 @@
     process {
 
         if ($ExtensionPath) {
-            @(foreach ($_ in Get-ChildItem -Recurse -Path $ExtensionPath -File) {
+            @(foreach ($_ in Get-ChildItem -Recurse:$($ExtensionPath -notmatch '^\.[\\/]') -Path $ExtensionPath -File) {
                 if ($_.Name -notmatch $extensionFullRegex) { continue }
                 if ($CommandName -or $ExtensionName) {
                     ConvertToExtension $_ |

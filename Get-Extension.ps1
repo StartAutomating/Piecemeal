@@ -1063,12 +1063,16 @@
 
         if ($Force) {
             $script:Extensions  = $null
+            $script:ExtensionsByName    = $null
             $script:AllCommands = @()
         }
         if (-not $script:Extensions)
         {
-            $script:ExtensionsFromFiles = [Ordered]@{}
-            $script:ExtensionsFileTimes = [Ordered]@{}
+            $script:ExtensionsFromFiles     = [Ordered]@{}
+            $script:ExtensionsFileTimes     = [Ordered]@{}
+            $script:ExtensionsByName        = [Ordered]@{}
+            $script:ExtensionsByDisplayName = [Ordered]@{}
+            $script:ExtensionsByPattern     = [Ordered]@{}
             $script:Extensions =
                 @(@(
                 #region Find Extensions in Loaded Modules
@@ -1114,6 +1118,36 @@
                 $ExecutionContext.SessionState.InvokeCommand.GetCommands('*', 'Function,Alias',$true) -match $extensionFullRegex
                 #endregion Find Extensions in Loaded Commands
                 ) | Select-Object -Unique | Sort-Object Rank, Name)
+
+            foreach ($extCmd in $script:Extensions) {
+                if (-not $script:ExtensionsByName[$extCmd.Name]) {
+                    $script:ExtensionsByName[$extCmd.Name] = $extCmd
+                }
+                else {
+                    $script:ExtensionsByName[$extCmd.Name] = @($script:ExtensionsByName[$extCmd.Name]) + $extCmd
+                }
+                if ($extCmd.DisplayName) {
+                    if (-not $script:ExtensionsByDisplayName[$extCmd.DisplayName]) {
+                        $script:ExtensionsByDisplayName[$extCmd.DisplayName] = $extCmd
+                    }
+                    else {
+                        $script:ExtensionsByDisplayName[$extCmd.DisplayName] = @($script:ExtensionsByDisplayName[$extCmd.DisplayName]) + $extCmd
+                    }   
+                }
+                $ExtensionCommandAliases = @($ExtensionCommand.Attributes.AliasNames)
+                $ExtensionCommandAliasRegexes = @($ExtensionCommandAliases -match '^/' -match '/$')
+                if ($ExtensionCommandAliasRegexes) {
+                    foreach ($extensionAliasRegex in $ExtensionCommandAliases) {
+                        $regex = [Regex]::New($extensionAliasRegex -replace '^/' -replace '/$', 'IgnoreCase,IgnorePatternWhitespace')
+                        if (-not $script:ExtensionsByPattern[$regex]) {
+                            $script:ExtensionsByPattern[$regex] = $extCmd
+                        } else {
+                            $script:ExtensionsByPattern[$regex] = @($script:ExtensionsByPattern[$regex]) + $extCmd
+                        }
+                    }
+                }
+                
+            }
         }
         #endregion Find Extensions
     }
@@ -1121,7 +1155,7 @@
     process {
 
         if ($ExtensionPath) {
-            @(foreach ($_ in Get-ChildItem -Recurse -Path $ExtensionPath -File) {
+            @(foreach ($_ in Get-ChildItem -Recurse:$($ExtensionPath -notmatch '^\.[\\/]') -Path $ExtensionPath -File) {
                 if ($_.Name -notmatch $extensionFullRegex) { continue }
                 if ($CommandName -or $ExtensionName) {
                     ConvertToExtension $_ |
@@ -1139,9 +1173,29 @@
                 # This section can be updated by using Install-Piecemeal -ForeachObject
                 #endregion Install-Piecemeal -ForeachObject
         } elseif ($CommandName -or $ExtensionName) {
-            $script:Extensions |
-                . WhereExtends $CommandName |                
-                OutputExtension
+            if (-not $CommandName -and -not $like -and -not $Match) {
+                foreach ($exn in $ExtensionName) {
+                    if ($script:ExtensionsByName[$exn]) {
+                        $script:ExtensionsByName[$exn] | OutputExtension
+                    }
+                    if ($script:ExtensionsByDisplayName[$exn]) {
+                        $script:ExtensionsByDisplayName[$exn] | OutputExtension
+                    }
+                    if ($script:ExtensionsByPattern.Count) {
+                        foreach ($patternAndValue in $script:ExtensionsByPattern.GetEnumerator()) {
+                            if ($patternAndValue.Key.IsMatch($exn)) {
+                                $patternAndValue.Value | OutputExtension
+                            }
+                        }
+                        $script:ExtensionsByDisplayName[$exn]
+                    }
+                }                
+            } else {
+                $script:Extensions |
+                    . WhereExtends $CommandName |
+                    OutputExtension
+            }
+            
         } else {
             $script:Extensions | 
                 OutputExtension
